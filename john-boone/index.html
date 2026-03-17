@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>John Boone | Resume</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+  <header>
+    <h1>John Boone - Resume</h1>
+  </header>
+
+  <div class="container">
+    
+    <!-- Profile Intro Section -->
+    <section class="profile-section">
+      <!-- PLACEHOLDER FOR PHOTO: Replace this div with an <img> tag when ready. 
+           Example: <img src="images/headshot.jpg" alt="John Boone" class="profile-img-placeholder"> -->
+      <div class="profile-img-placeholder">
+        <span>[Your Photo Here]</span>
+      </div>
+      
+      <div class="profile-text">
+        <h1>Hi, I'm John</h1>
+        <p>I am a lifelong learner driven to build, improve, and elevate the things I work on. In addition to my formal education and qualifications, I enjoy expanding my skillset through study, experimentation, and hands-on creation. Whether I am designing and hosting websites, developing custom tools and automations, or creating one-of-a-kind physical products through laser engraving and 3D printing, my focus is always on maximizing value and pushing for higher quality. I combine technical adaptability, creative design, and a constant desire to master new capabilities, which allows me to take on projects with both precision and imagination.</p>
+      </div>
+    </section>
+
+    <!-- Interactive Work Experience Section -->
+    <section>
+      <h2 style="color: var(--primary-color); border-bottom: 2px solid var(--secondary-color-1); padding-bottom: 10px;">Experience</h2>
+      
+      <!-- Experience Item 1 -->
+      <button class="accordion"><strong>Company Name</strong> - <em>Job Title (Year - Year)</em></button>
+      <div class="panel">
+        <p>Brief description of your role.</p>
+        <ul>
+          <li>Key achievement or responsibility 1.</li>
+          <li>Key achievement or responsibility 2.</li>
+          <li>Key achievement or responsibility 3.</li>
+        </ul>
+      </div>
+
+      <!-- Experience Item 2 -->
+      <button class="accordion"><strong>Company Name</strong> - <em>Job Title (Year - Year)</em></button>
+      <div class="panel">
+        <p>Brief description of your role.</p>
+        <ul>
+          <li>Key achievement or responsibility 1.</li>
+          <li>Key achievement or responsibility 2.</li>
+          <li>Key achievement or responsibility 3.</li>
+        </ul>
+      </div>
+
+      <!-- Experience Item 3 -->
+      <button class="accordion"><strong>Company Name</strong> - <em>Job Title (Year - Year)</em></button>
+      <div class="panel">
+        <p>Brief description of your role.</p>
+        <ul>
+          <li>Key achievement or responsibility 1.</li>
+          <li>Key achievement or responsibility 2.</li>
+          <li>Key achievement or responsibility 3.</li>
+        </ul>
+      </div>
+
+    </section>
+
+  </div>
+
+  <footer>
+    <p>&copy; 2024 John Boone. All rights reserved.</p>
+  </footer>
+
+  <!-- Accordion JavaScript -->
+  <script>
+    var acc = document.getElementsByClassName("accordion");
+    var i;
+
+    for (i = 0; i < acc.length; i++) {
+      acc[i].addEventListener("click", function() {
+        this.classList.toggle("active");
+        var panel = this.nextElementSibling;
+        if (panel.style.maxHeight) {
+          panel.style.maxHeight = null;
+        } else {
+          panel.style.maxHeight = panel.scrollHeight + "px";
+        } 
+      });
+    }
+  </script>
+
+</body>
+</html>
