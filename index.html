@@ -5,25 +5,61 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Welcome | John Boone</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Specific styles for landing page vertical centering */
+    .landing-hero {
+      min-height: 70vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .landing-card {
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    .landing-card h1 {
+      margin-bottom: 1.5rem;
+      color: var(--primary-color);
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>Welcome to Boone.click</h1>
-  </header>
 
-  <div class="container">
-    <section>
-      <h2>Home Page</h2>
-      <p>This is the landing page for boone.click. You can build this out more later with links to other projects, blog posts, or resources.</p>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">Boone.click</div>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link active">Home</a>
+        <a href="john/index.html" class="nav-link">Resume</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container landing-hero">
+
+    <div class="bento-card landing-card">
+      <h1>Welcome to Boone.click</h1>
+      <p style="margin-bottom: 2rem;">This is the landing page for boone.click. You can build this out more later with links to other projects, blog posts, or resources.</p>
       
       <div style="margin-top: 2rem;">
-        <p>To view the resume page, click below:</p>
-        <a href="john/index.html" class="btn">View John's Resume</a>
+        <p style="margin-bottom: 1.5rem;">To view the resume page, click below:</p>
+        <a href="john/index.html" class="btn">
+          View John's Resume <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i>
+        </a>
       </div>
-    </section>
+    </div>
+
   </div>
 
-  <footer>
+  <footer style="position: absolute; bottom: 0; width: 100%; border-top: none;">
     <p>&copy; 2024 John Boone. All rights reserved.</p>
   </footer>
 </body>
