@@ -3,175 +3,298 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>John | Resume</title>
+  <title>John Boone | Resume</title>
   <link rel="stylesheet" href="../css/style.css">
+  <!-- Include a lightweight icon set -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
-  <header>
-    <h1>John - Resume</h1>
-  </header>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">Boone.click</div>
+      <div class="nav-links">
+        <a href="../index.html" class="nav-link">Home</a>
+        <a href="index.html" class="nav-link active">Resume</a>
+      </div>
+    </div>
+  </nav>
 
   <div class="container">
     
-    <!-- Profile Intro Section -->
-    <section class="profile-section">
-      <img src="../John Boone Suit (no background).png" alt="John" class="profile-img">
-      
-      <div class="profile-text">
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-text">
         <h1>Hi, I'm John</h1>
-        <p>I am a lifelong learner driven to build, improve, and elevate the things I work on. In addition to my formal education and qualifications, I enjoy expanding my skillset through study, experimentation, and hands-on creation. Whether I am designing and hosting websites, developing custom tools and automations, or creating one-of-a-kind physical products through laser engraving and 3D printing, my focus is always on maximizing value and pushing for higher quality. I combine technical adaptability, creative design, and a constant desire to master new capabilities, which allows me to take on projects with both precision and imagination.</p>
+        <span class="tagline">Driven to build, improve, and elevate.</span>
+        <p>I am a lifelong learner. In addition to my formal education in Public Relations & Business Administration, I enjoy expanding my skillset through study, experimentation, and hands-on creation. Whether designing websites, developing custom automations, or creating one-of-a-kind physical products through laser engraving and 3D printing, my focus is always on maximizing value and pushing for higher quality.</p>
+        <p>I combine technical adaptability, creative design, and a constant desire to master new capabilities, allowing me to take on projects with both precision and imagination.</p>
+      </div>
+      <div class="hero-image-wrapper">
+        <img src="../John Boone Suit (no background).png" alt="John Boone" class="profile-img">
       </div>
     </section>
 
-    <!-- Interactive Work Experience Section -->
-    <section>
-      <h2 style="color: var(--primary-color); border-bottom: 2px solid var(--secondary-color-1); padding-bottom: 10px;">Experience</h2>
+    <!-- Bento Grid Section -->
+    <div class="bento-grid">
       
-      <!-- Experience Item 1 -->
-      <button class="accordion"><strong>Southern Adventist University</strong> - <em>Assistant Director of Alumni Relations (2022-Present)</em></button>
-      <div class="panel">
-        <ul>
-          <li>Helped manage 20k active alumni through committees, online engagement, email communications, and in-person events.</li>
-          <li>Planned and hosted events across the country with attendance ranging from 20-1,00 attendees.</li>
-          <li>Refreshed website layout and content for a more streamlined online experience.</li>
-          <li>Researched, launched, and managed a new online alumni platform.</li>
-          <li>Designed physical/digital items such as fliers, postcards, & signage.</li>
-          <li>Revamped, launched, and managed the university’s volunteer program with 100+ volunteers.</li>
-          <li>Drafted and sent emails with recipient lists ranging from 20-20k.</li>
-        </ul>
+      <!-- Experience Column -->
+      <div class="col-span-8">
+        <h2 class="section-title">Experience</h2>
+        <div class="bento-grid" style="margin-bottom: 0;">
+
+          <!-- Experience Card 1 -->
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+            <div class="exp-header">
+              <div>
+                <h3 class="exp-title">Assistant Director of Alumni Relations</h3>
+                <div class="exp-role">Southern Adventist University &bull; 2022-Present</div>
+              </div>
+              <div class="exp-icon"><i class="fa-solid fa-plus"></i></div>
+            </div>
+            <div class="exp-details">
+              <ul>
+                <li>Helped manage 20k active alumni through committees, online engagement, email communications, and in-person events.</li>
+                <li>Planned and hosted events across the country with attendance ranging from 20-1,00 attendees.</li>
+                <li>Refreshed website layout and content for a more streamlined online experience.</li>
+                <li>Researched, launched, and managed a new online alumni platform.</li>
+                <li>Designed physical/digital items such as fliers, postcards, & signage.</li>
+                <li>Revamped, launched, and managed the university’s volunteer program with 100+ volunteers.</li>
+                <li>Drafted and sent emails with recipient lists ranging from 20-20k.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Experience Card 2 -->
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+            <div class="exp-header">
+              <div>
+                <h3 class="exp-title">Executive Assistant</h3>
+                <div class="exp-role">Simple Solutions Medical &bull; 2020-2022</div>
+              </div>
+              <div class="exp-icon"><i class="fa-solid fa-plus"></i></div>
+            </div>
+            <div class="exp-details">
+              <ul>
+                <li>Assisted in all forms of business administration, as 1 of 2 employees, in the creation and development of Simple Solutions Medical.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Experience Card 3 -->
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+            <div class="exp-header">
+              <div>
+                <h3 class="exp-title">Program Administrator</h3>
+                <div class="exp-role">Chaplains Office, Southern Adventist University &bull; 2022</div>
+              </div>
+              <div class="exp-icon"><i class="fa-solid fa-plus"></i></div>
+            </div>
+            <div class="exp-details">
+              <ul>
+                <li>Handled the daily operations and administration for a university pilot program that paired faculty and students in pairs for one-on-one mentorship.</li>
+                <li>Assisted the Associate Chaplain in various projects including the planning, preparation, and execution of 2 campus wide events that brought outside guests to campus.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Experience Card 4 -->
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+            <div class="exp-header">
+              <div>
+                <h3 class="exp-title">Program Assistant</h3>
+                <div class="exp-role">Office of Student Development, Southern Adventist University &bull; 2022</div>
+              </div>
+              <div class="exp-icon"><i class="fa-solid fa-plus"></i></div>
+            </div>
+            <div class="exp-details">
+              <ul>
+                <li>Responsible for operating the university’s Enrichment Credit system through attendance tracking and customer service, managed the office’s student work force, and served as the office’s representative at weekly campus wide convocations.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Experience Card 5 -->
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+            <div class="exp-header">
+              <div>
+                <h3 class="exp-title">Public Relations Intern</h3>
+                <div class="exp-role">Rocky Mountain Conference of Seventh-day Adventists &bull; 2021</div>
+              </div>
+              <div class="exp-icon"><i class="fa-solid fa-plus"></i></div>
+            </div>
+            <div class="exp-details">
+              <ul>
+                <li>Managed social media content for Glacier View Ranch Summer Camp, created weekly articles about summer camp for the conference newsletter, assisted camp directors with internal and external communications, created and implemented the camp’s COVID-19 protocols.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Experience Card 6 -->
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+            <div class="exp-header">
+              <div>
+                <h3 class="exp-title">Student Director</h3>
+                <div class="exp-role">Admissions Department, Southern Adventist University &bull; 2019-2021</div>
+              </div>
+              <div class="exp-icon"><i class="fa-solid fa-plus"></i></div>
+            </div>
+            <div class="exp-details">
+              <ul>
+                <li>Assist the campus experience manager with customer communications through emails or phone calls as well as hosting perspective students and their families on campus. Managed student ambassadors during larger events on campus.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Experience Card 7 -->
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+            <div class="exp-header">
+              <div>
+                <h3 class="exp-title">LifeGroup Director</h3>
+                <div class="exp-role">Chaplain’s Office, Southern Adventist University &bull; 2020-2021</div>
+              </div>
+              <div class="exp-icon"><i class="fa-solid fa-plus"></i></div>
+            </div>
+            <div class="exp-details">
+              <ul>
+                <li>Prepared and individually mentored 8 LifeGroup Coaches as they led other student leaders.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Experience Card 8 -->
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+            <div class="exp-header">
+              <div>
+                <h3 class="exp-title">Freelancing</h3>
+                <div class="exp-role">Videography / Editing</div>
+              </div>
+              <div class="exp-icon"><i class="fa-solid fa-plus"></i></div>
+            </div>
+            <div class="exp-details">
+              <ul>
+                <li>Ministry content generation and creation for summer online ministry at Nosoca Pine Ranch 2020.</li>
+                <li>Videoing and editing promotional and information videos for Wilkens Medical Group 2019-2020.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Experience Card 9 -->
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+            <div class="exp-header">
+              <div>
+                <h3 class="exp-title">LifeGroup Coach</h3>
+                <div class="exp-role">Chaplain’s Office, Southern Adventist University &bull; 2019-2020</div>
+              </div>
+              <div class="exp-icon"><i class="fa-solid fa-plus"></i></div>
+            </div>
+            <div class="exp-details">
+              <ul>
+                <li>Creatively enriched the lives of 8 student LifeGroup leaders through one-on-one mentorship meetings.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Experience Card 10 -->
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+            <div class="exp-header">
+              <div>
+                <h3 class="exp-title">Parent Liaison</h3>
+                <div class="exp-role">Nosoca Pines Ranch Summer Camp &bull; 2018-2019</div>
+              </div>
+              <div class="exp-icon"><i class="fa-solid fa-plus"></i></div>
+            </div>
+            <div class="exp-details">
+              <ul>
+                <li>Served as the liaison between 250+ children and their parents every week for 4 weeks of summer camp.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Experience Card 11 -->
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+            <div class="exp-header">
+              <div>
+                <h3 class="exp-title">Call Center Caller</h3>
+                <div class="exp-role">Southern Adventist University &bull; 2017-2018</div>
+              </div>
+              <div class="exp-icon"><i class="fa-solid fa-plus"></i></div>
+            </div>
+            <div class="exp-details">
+              <ul>
+                <li>Called alumni, current student’s parents, and previous donors to reaffirm relations and raise funds.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Experience Card 12 -->
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+            <div class="exp-header">
+              <div>
+                <h3 class="exp-title">Special Services / Counselor</h3>
+                <div class="exp-role">Nosoca Pines Ranch Summer Camp &bull; 2016-2017</div>
+              </div>
+              <div class="exp-icon"><i class="fa-solid fa-plus"></i></div>
+            </div>
+            <div class="exp-details">
+              <ul>
+                <li>Counseled, facilitated and supervised 6-12 kids for 1 week at a time, assisting the kitchen staff in preparing food for 300 people, and a worked as a waterfront lifeguard.</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
       </div>
 
-      <!-- Experience Item 2 -->
-      <button class="accordion"><strong>Simple Solutions Medical</strong> - <em>Executive Assistant (2020-2022)</em></button>
-      <div class="panel">
-        <ul>
-          <li>Assisted in all forms of business administration, as 1 of 2 employees, in the creation and development of Simple Solutions Medical.</li>
-        </ul>
+      <!-- Side Column: Education & Skills -->
+      <div class="col-span-4">
+
+        <!-- Education Card -->
+        <h2 class="section-title">Education</h2>
+        <div class="bento-card" style="margin-bottom: 2rem;">
+          <ul class="bento-list">
+            <li>
+              <strong>Southern Adventist University</strong>
+              <em>Undergrad BS in Public Relations & Business Administration</em>
+              <em>Class of 2021</em>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Skills Card -->
+        <h2 class="section-title">Skills</h2>
+        <div class="bento-card">
+          <ul class="bento-list">
+            <li><strong>Microsoft Office Specialist</strong><em>Excel certification</em></li>
+            <li><strong>Design</strong><em>Adobe Illustrator experience</em></li>
+            <li><strong>Communication</strong><em>Internal & external communications</em></li>
+            <li><strong>Technical Adaptability</strong><em>Custom tools, 3D printing, laser engraving</em></li>
+          </ul>
+        </div>
+
       </div>
 
-      <!-- Experience Item 3 -->
-      <button class="accordion"><strong>Southern Adventist University</strong> - <em>Program Administrator in the Chaplains office (2022)</em></button>
-      <div class="panel">
-        <ul>
-          <li>Handled the daily operations and administration for a university pilot program that paired faculty and students in pairs for one-on-one mentorship. Assisted the Associate Chaplain in various projects including the planning, preparation, and execution of 2 campus wide events that brought outside guests to campus.</li>
-        </ul>
-      </div>
-
-      <!-- Experience Item 4 -->
-      <button class="accordion"><strong>Southern Adventist University</strong> - <em>Program Assistant in the office of Student Development (2022)</em></button>
-      <div class="panel">
-        <ul>
-          <li>Responsible for operating the university’s Enrichment Credit system through attendance tracking and customer service, managed the office’s student work force, and served as the office’s representative at weekly campus wide convocations.</li>
-        </ul>
-      </div>
-
-      <!-- Experience Item 5 -->
-      <button class="accordion"><strong>Rocky Mountain Conference of Seventh-day Adventists</strong> - <em>Public Relations Intern (2021)</em></button>
-      <div class="panel">
-        <ul>
-          <li>Managed social media content for Glacier View Ranch Summer Camp, created weekly articles about summer camp for the conference newsletter, assisted camp directors with internal and external communications, created and implemented the camp’s COVID-19 protocols.</li>
-        </ul>
-      </div>
-
-      <!-- Experience Item 6 -->
-      <button class="accordion"><strong>Southern Adventist University</strong> - <em>Student Director in the Admissions Department (2019-2021)</em></button>
-      <div class="panel">
-        <ul>
-          <li>Assist the campus experience manager with customer communications through emails or phone calls as well as hosting perspective students and their families on campus. Managed student ambassadors during larger events on campus.</li>
-        </ul>
-      </div>
-
-      <!-- Experience Item 7 -->
-      <button class="accordion"><strong>Southern Adventist University</strong> - <em>LifeGroup Director through the Chaplain’s office (2020-2021)</em></button>
-      <div class="panel">
-        <ul>
-          <li>Prepared and individually mentored 8 LifeGroup Coaches as they led other student leaders.</li>
-        </ul>
-      </div>
-
-      <!-- Experience Item 8 -->
-      <button class="accordion"><strong>Freelancing</strong> - <em>Videography/editing</em></button>
-      <div class="panel">
-        <ul>
-          <li>Ministry content generation and creation for summer online ministry at Nosoca Pine Ranch 2020.</li>
-          <li>Videoing and editing promotional and information videos for Wilkens Medical Group 2019-2020.</li>
-        </ul>
-      </div>
-
-      <!-- Experience Item 9 -->
-      <button class="accordion"><strong>Southern Adventist University</strong> - <em>LifeGroup Coach through the chaplain’s office (2019-2020)</em></button>
-      <div class="panel">
-        <ul>
-          <li>Creatively enriched the lives of 8 student LifeGroup leaders through one-on-one mentorship meetings.</li>
-        </ul>
-      </div>
-
-      <!-- Experience Item 10 -->
-      <button class="accordion"><strong>Nosoca Pines Ranch summer camp</strong> - <em>Parent Liaison (2018 & 2019)</em></button>
-      <div class="panel">
-        <ul>
-          <li>Served as the liaison between 250+ children and their parents every week for 4 weeks of summer camp.</li>
-        </ul>
-      </div>
-
-      <!-- Experience Item 11 -->
-      <button class="accordion"><strong>Southern Adventist University</strong> - <em>Call Center Caller (2017-2018)</em></button>
-      <div class="panel">
-        <ul>
-          <li>Called alumni, current student’s parents, and previous donors to reaffirm relations and raise funds.</li>
-        </ul>
-      </div>
-
-      <!-- Experience Item 12 -->
-      <button class="accordion"><strong>Nosoca Pines Ranch summer camp</strong> - <em>Special Services/Counselor (2016 & 2017)</em></button>
-      <div class="panel">
-        <ul>
-          <li>Counseled, facilitated and supervised 6-12 kids for 1 week at a time, assisting the kitchen staff in preparing food for 300 people, and a worked as a waterfront lifeguard.</li>
-        </ul>
-      </div>
-
-    </section>
-
-    <!-- Education Section -->
-    <section>
-      <h2 style="color: var(--primary-color); border-bottom: 2px solid var(--secondary-color-1); padding-bottom: 10px;">Education</h2>
-      <ul>
-        <li><strong>Southern Adventist University</strong> - <em>Undergrad BS in Public Relations &amp; Business Administration (2021)</em></li>
-      </ul>
-    </section>
-
-    <!-- Additional Skills Section -->
-    <section>
-      <h2 style="color: var(--primary-color); border-bottom: 2px solid var(--secondary-color-1); padding-bottom: 10px;">Additional Skills</h2>
-      <ul>
-        <li>Microsoft Office Specialist: Excel certification</li>
-        <li>Adobe Illustrator design experience</li>
-        <li>Internal &amp; external communication</li>
-      </ul>
-    </section>
+    </div>
 
   </div>
 
   <footer>
-    <p>&copy; 2024 John. All rights reserved.</p>
+    <p>&copy; 2024 John Boone. All rights reserved.</p>
   </footer>
 
   <!-- Accordion JavaScript -->
   <script>
-    var acc = document.getElementsByClassName("accordion");
-    var i;
+    function toggleCard(card) {
+      // Toggle 'active' class on the clicked card
+      card.classList.toggle('active');
 
-    for (i = 0; i < acc.length; i++) {
-      acc[i].addEventListener("click", function() {
-        this.classList.toggle("active");
-        var panel = this.nextElementSibling;
-        if (panel.style.maxHeight) {
-          panel.style.maxHeight = null;
-        } else {
-          panel.style.maxHeight = panel.scrollHeight + "px";
-        } 
-      });
+      // Update icon based on active state
+      const icon = card.querySelector('.exp-icon i');
+      if (card.classList.contains('active')) {
+        // We use CSS transform to rotate the plus, but we can also switch classes if we prefer.
+        // For now, the CSS `.exp-card.active .exp-icon` rotates it by 45deg nicely.
+      }
     }
   </script>
 
