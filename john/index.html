@@ -51,7 +51,7 @@
         <div class="bento-grid" style="margin-bottom: 0;">
 
           <!-- Experience Card 1 -->
-          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(event, this)">
             <div class="exp-header">
               <div>
                 <h3 class="exp-title">Assistant Director of Alumni Relations</h3>
@@ -76,7 +76,7 @@
           </div>
 
           <!-- Experience Card 2 -->
-          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(event, this)">
             <div class="exp-header">
               <div>
                 <h3 class="exp-title">Executive Assistant</h3>
@@ -92,7 +92,7 @@
           </div>
 
           <!-- Experience Card 3 -->
-          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(event, this)">
             <div class="exp-header">
               <div>
                 <h3 class="exp-title">Program Administrator</h3>
@@ -109,7 +109,7 @@
           </div>
 
           <!-- Experience Card 4 -->
-          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(event, this)">
             <div class="exp-header">
               <div>
                 <h3 class="exp-title">Program Assistant</h3>
@@ -125,7 +125,7 @@
           </div>
 
           <!-- Experience Card 5 -->
-          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(event, this)">
             <div class="exp-header">
               <div>
                 <h3 class="exp-title">Public Relations Intern</h3>
@@ -141,7 +141,7 @@
           </div>
 
           <!-- Experience Card 6 -->
-          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(event, this)">
             <div class="exp-header">
               <div>
                 <h3 class="exp-title">Student Director</h3>
@@ -157,7 +157,7 @@
           </div>
 
           <!-- Experience Card 7 -->
-          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(event, this)">
             <div class="exp-header">
               <div>
                 <h3 class="exp-title">LifeGroup Director</h3>
@@ -173,7 +173,7 @@
           </div>
 
           <!-- Experience Card 8 -->
-          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(event, this)">
             <div class="exp-header">
               <div>
                 <h3 class="exp-title">Freelancing</h3>
@@ -190,7 +190,7 @@
           </div>
 
           <!-- Experience Card 9 -->
-          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(event, this)">
             <div class="exp-header">
               <div>
                 <h3 class="exp-title">LifeGroup Coach</h3>
@@ -206,7 +206,7 @@
           </div>
 
           <!-- Experience Card 10 -->
-          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(event, this)">
             <div class="exp-header">
               <div>
                 <h3 class="exp-title">Parent Liaison</h3>
@@ -222,7 +222,7 @@
           </div>
 
           <!-- Experience Card 11 -->
-          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(event, this)">
             <div class="exp-header">
               <div>
                 <h3 class="exp-title">Call Center Caller</h3>
@@ -238,7 +238,7 @@
           </div>
 
           <!-- Experience Card 12 -->
-          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(this)">
+          <div class="bento-card col-span-12 exp-card" onclick="toggleCard(event, this)">
             <div class="exp-header">
               <div>
                 <h3 class="exp-title">Special Services / Counselor</h3>
@@ -294,7 +294,12 @@
 
   <!-- Accordion JavaScript -->
   <script>
-    function toggleCard(card) {
+    function toggleCard(event, card) {
+      // Prevent toggling when a link inside the card is clicked
+      if (event && event.target.closest('a')) {
+        return;
+      }
+
       // Toggle 'active' class on the clicked card
       card.classList.toggle('active');
 
