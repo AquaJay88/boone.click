@@ -142,12 +142,95 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
   padding: 3rem 1.5rem;
 }
 
+/* Drifting Ribbon Animation */
+.ribbon-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1; /* Behind content but high enough to interact with mix-blend-mode */
+  overflow: visible; /* Let it drift outside bounds naturally */
+  pointer-events: none;
+}
+
+.ribbon-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.8;
+  mix-blend-mode: multiply; /* Helps colors blend richly if they overlap */
+  animation: drift 25s infinite alternate ease-in-out;
+}
+
+.ribbon-blob-1 {
+  width: 400px;
+  height: 400px;
+  background-color: var(--secondary-color-1); /* #6fBCCB */
+  top: -10%;
+  left: -10%;
+  animation-delay: 0s;
+}
+
+.ribbon-blob-2 {
+  width: 500px;
+  height: 300px;
+  background-color: var(--secondary-color-2); /* #4576AB */
+  top: 30%;
+  right: -20%;
+  animation-delay: -5s;
+  animation-duration: 30s;
+}
+
+.ribbon-blob-3 {
+  width: 350px;
+  height: 350px;
+  background-color: #d4a3a3; /* Desaturated red as requested */
+  bottom: -10%;
+  left: 20%;
+  animation-delay: -10s;
+  animation-duration: 20s;
+}
+
+/* Striped Texture overlay to give it the 'ribbon' feel */
+.ribbon-texture {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(255, 255, 255, 0.1) 10px,
+    rgba(255, 255, 255, 0.1) 20px
+  );
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  z-index: 2; /* Sits over the blobs but behind content */
+  animation: textureDrift 40s linear infinite;
+  mask-image: radial-gradient(ellipse at center, black 20%, transparent 60%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 60%);
+}
+
+@keyframes drift {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  33% { transform: translate(15%, 10%) scale(1.1) rotate(5deg); }
+  66% { transform: translate(-10%, 20%) scale(0.9) rotate(-5deg); }
+  100% { transform: translate(5%, -15%) scale(1.05) rotate(2deg); }
+}
+
+@keyframes textureDrift {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-10%, -10%); }
+}
+
 /* Hero Section */
 .hero-wrapper {
   position: relative;
-  margin-bottom: 6rem; /* increased to give room for wave */
+  margin-bottom: 2rem;
   padding-bottom: 2rem;
-  /* Allow the wave to overflow naturally or adjust as needed */
   overflow: visible;
 }
 
@@ -157,8 +240,6 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
   justify-content: space-between;
   gap: 4rem;
   position: relative;
-  /* Removed z-index to avoid establishing a local stacking context that forces image over wave */
-  /* Max width container since wrapper isn't contained */
   max-width: var(--max-width);
   margin: 0 auto;
 }
@@ -169,28 +250,48 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
   z-index: 10;
 }
 
-.tagline {
+/* Mix-Blend-Mode Effect for Text over Ribbon */
+.hero-text-blend {
+  /* mix-blend-mode: overlay keeps dark colors dark but lightens over the bright background */
+  /* To get specifically primary red (#A81313) we need a creative approach */
+  /* If the text is dark, color-burn or hard-light over light blue creates rich contrast */
+  /* For this specific Stripe effect, using color-burn or overlay makes the dark gray text
+     take on a rich hue when it hits the blue background. */
+
+  /* We will set the text color to almost black but with a red tint */
+  color: #3d0d0d;
+  mix-blend-mode: color-burn; /* When this hits light blue/pink it turns vibrant reddish */
+}
+
+/* For better cross-browser blending we specifically target the text elements */
+.hero-text-blend h1, .hero-text-blend p {
+  /* Using color-burn on dark grayish-red makes it look normal dark gray on light background,
+     but vibrant red when the blue background passes under it. */
+  color: #3b3030;
+}
+
+.hero-text-blend .tagline {
   font-size: 1.25rem;
   color: var(--primary-color);
   font-weight: 600;
   margin-bottom: 1.5rem;
   display: block;
+  /* Disable blend mode on the already red tagline so it stays red */
+  mix-blend-mode: normal;
 }
 
 .hero-text p {
   font-size: 1.15rem;
   max-width: 600px;
+  /* Ensure paragraph text is affected by blend mode */
 }
 
 .hero-image-wrapper {
   flex-shrink: 0;
   position: relative;
-  /* The image should sit behind the wave */
   z-index: 5;
   display: flex;
   align-items: flex-end;
-  /* Push it down slightly so the bottom is obscured by the wave */
-  transform: translateY(2rem);
 }
 
 .hero-portrait {
@@ -200,21 +301,53 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
   object-fit: contain;
   /* Give it a 3D drop shadow, avoiding hard box-shadows on transparent pngs */
   filter: drop-shadow(0 15px 25px rgba(0,0,0,0.25));
+  /* Ensure the portrait sits perfectly on top of the ticker's top border */
+  margin-bottom: -1px;
 }
 
-.hero-wave {
-  position: absolute;
-  bottom: 0;
-  left: 0;
+/* Skills Ticker */
+.skills-ticker-wrapper {
   width: 100vw;
-  left: 50%;
-  transform: translateX(-50%) translateY(35%);
-  height: auto;
-  min-height: 200px; /* Gives the wave some body if the viewport is small */
-  /* The wave should sit in front of the image, but behind the text if they overlap */
-  z-index: 8;
-  /* Fill the bottom out if screen is wider than max-width */
+  margin-left: calc(-50vw + 50%);
+  border-top: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
   background-color: transparent;
+  overflow: hidden;
+  position: relative;
+  z-index: 4; /* Below portrait (z-index 5) but above drifting background */
+  padding: 1rem 0;
+}
+
+.skills-ticker {
+  display: flex;
+  width: max-content;
+}
+
+.ticker-content {
+  display: flex;
+  white-space: nowrap;
+  animation: ticker-scroll 60s linear infinite;
+  align-items: center;
+}
+
+.ticker-content span {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ticker-dot {
+  color: var(--secondary-color-1) !important;
+  margin: 0 2rem;
+  font-size: 1.5rem !important;
+  line-height: 1;
+}
+
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); } /* Scrolls exactly half of the duplicated content */
 }
 
 /* Bento Box Grid */

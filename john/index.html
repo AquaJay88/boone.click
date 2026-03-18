@@ -21,13 +21,22 @@
     </div>
   </nav>
 
-  <div class="container">
+  <div class="container" style="position: relative;">
     
     <!-- Hero Section -->
     <div class="hero-wrapper">
+
+      <!-- Drifting Ribbon Background -->
+      <div class="ribbon-background">
+        <div class="ribbon-blob ribbon-blob-1"></div>
+        <div class="ribbon-blob ribbon-blob-2"></div>
+        <div class="ribbon-blob ribbon-blob-3"></div>
+        <div class="ribbon-texture"></div>
+      </div>
+
       <!-- Added extra padding to give image more room -->
       <section class="hero container">
-        <div class="hero-text">
+        <div class="hero-text hero-text-blend">
           <h1>Hi, I'm John</h1>
           <span class="tagline">Driven to build, improve, and elevate.</span>
           <p>I am a lifelong learner. In addition to my formal education in Public Relations & Business Administration, I enjoy expanding my skillset through study, experimentation, and hands-on creation. Whether designing websites, developing custom automations, or creating one-of-a-kind physical products through laser engraving and 3D printing, my focus is always on maximizing value and pushing for higher quality.</p>
@@ -37,9 +46,43 @@
           <img src="../John Boone Suit (no background).png" alt="John Boone" class="hero-portrait">
         </div>
       </section>
-      <svg class="hero-wave" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" preserveAspectRatio="none">
-        <path fill="var(--primary-color)" fill-opacity="1" d="M0,192L48,197.3C96,203,192,213,288,192C384,171,480,117,576,106.7C672,96,768,128,864,154.7C960,181,1056,203,1152,192C1248,181,1344,139,1392,117.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-      </svg>
+
+      <!-- Skills Ticker -->
+      <div class="skills-ticker-wrapper">
+        <div class="skills-ticker">
+          <div class="ticker-content">
+            <!-- Duplicate the list a few times to ensure seamless infinite scrolling -->
+            <span>Public Relations</span><span class="ticker-dot">•</span>
+            <span>Management</span><span class="ticker-dot">•</span>
+            <span>Mass Communications</span><span class="ticker-dot">•</span>
+            <span>Relationship Manager</span><span class="ticker-dot">•</span>
+            <span>Web Design</span><span class="ticker-dot">•</span>
+            <span>Event Management</span><span class="ticker-dot">•</span>
+            <span>Adobe Illustrator</span><span class="ticker-dot">•</span>
+            <span>Excel</span><span class="ticker-dot">•</span>
+            <span>Laser Engraving</span><span class="ticker-dot">•</span>
+            <span>3D Printing</span><span class="ticker-dot">•</span>
+            <span>Videography</span><span class="ticker-dot">•</span>
+            <span>Mentorship</span><span class="ticker-dot">•</span>
+            <span>Social Media Management</span><span class="ticker-dot">•</span>
+
+            <!-- Duplicated list -->
+            <span>Public Relations</span><span class="ticker-dot">•</span>
+            <span>Management</span><span class="ticker-dot">•</span>
+            <span>Mass Communications</span><span class="ticker-dot">•</span>
+            <span>Relationship Manager</span><span class="ticker-dot">•</span>
+            <span>Web Design</span><span class="ticker-dot">•</span>
+            <span>Event Management</span><span class="ticker-dot">•</span>
+            <span>Adobe Illustrator</span><span class="ticker-dot">•</span>
+            <span>Excel</span><span class="ticker-dot">•</span>
+            <span>Laser Engraving</span><span class="ticker-dot">•</span>
+            <span>3D Printing</span><span class="ticker-dot">•</span>
+            <span>Videography</span><span class="ticker-dot">•</span>
+            <span>Mentorship</span><span class="ticker-dot">•</span>
+            <span>Social Media Management</span><span class="ticker-dot">•</span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Bento Grid Section -->
