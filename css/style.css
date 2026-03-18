@@ -154,43 +154,46 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
   pointer-events: none;
 }
 
+
 .ribbon-blob {
   position: absolute;
   border-radius: 50%;
   filter: blur(60px);
   opacity: 0.8;
   mix-blend-mode: multiply; /* Helps colors blend richly if they overlap */
-  animation: drift 25s infinite alternate ease-in-out;
+  animation-duration: 30s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-direction: normal;
 }
 
 .ribbon-blob-1 {
   width: 400px;
   height: 400px;
   background-color: var(--secondary-color-1); /* #6fBCCB */
-  top: -10%;
-  left: -10%;
-  animation-delay: 0s;
+  top: 0;
+  left: 0;
+  animation-name: orbit-1;
 }
 
 .ribbon-blob-2 {
   width: 500px;
   height: 300px;
   background-color: var(--secondary-color-2); /* #4576AB */
-  top: 30%;
-  right: -20%;
-  animation-delay: -5s;
-  animation-duration: 30s;
+  top: 0;
+  left: 0;
+  animation-name: orbit-2;
 }
 
 .ribbon-blob-3 {
   width: 350px;
   height: 350px;
   background-color: #d4a3a3; /* Desaturated red as requested */
-  bottom: -10%;
-  left: 20%;
-  animation-delay: -10s;
-  animation-duration: 20s;
+  top: 0;
+  left: 0;
+  animation-name: orbit-3;
 }
+
 
 /* Striped Texture overlay to give it the 'ribbon' feel */
 .ribbon-texture {
@@ -214,12 +217,27 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
   -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 60%);
 }
 
-@keyframes drift {
-  0% { transform: translate(0, 0) scale(1) rotate(0deg); }
-  33% { transform: translate(15%, 10%) scale(1.1) rotate(5deg); }
-  66% { transform: translate(-10%, 20%) scale(0.9) rotate(-5deg); }
-  100% { transform: translate(5%, -15%) scale(1.05) rotate(2deg); }
+@keyframes orbit-1 {
+  0%   { left: -10%; top: -10%; }
+  33%  { left: 90%; top: 30%; }
+  66%  { left: 20%; top: 90%; }
+  100% { left: -10%; top: -10%; }
 }
+
+@keyframes orbit-2 {
+  0%   { left: 90%; top: 30%; }
+  33%  { left: 20%; top: 90%; }
+  66%  { left: -10%; top: -10%; }
+  100% { left: 90%; top: 30%; }
+}
+
+@keyframes orbit-3 {
+  0%   { left: 20%; top: 90%; }
+  33%  { left: -10%; top: -10%; }
+  66%  { left: 90%; top: 30%; }
+  100% { left: 20%; top: 90%; }
+}
+
 
 @keyframes textureDrift {
   0% { transform: translate(0, 0); }
@@ -229,9 +247,9 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
 /* Hero Section */
 .hero-wrapper {
   position: relative;
-  margin-bottom: 2rem;
-  padding-bottom: 2rem;
-  overflow: visible;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  overflow: hidden;
 }
 
 .hero {
@@ -242,6 +260,7 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
   position: relative;
   max-width: var(--max-width);
   margin: 0 auto;
+  padding-bottom: 0;
 }
 
 .hero-text {
@@ -258,16 +277,55 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
   /* For this specific Stripe effect, using color-burn or overlay makes the dark gray text
      take on a rich hue when it hits the blue background. */
 
-  /* We will set the text color to almost black but with a red tint */
-  color: #3d0d0d;
-  mix-blend-mode: color-burn; /* When this hits light blue/pink it turns vibrant reddish */
+  color: transparent;
+  background-color: var(--text-primary);
+
+  /* Create 3 radial gradients that roughly track the 3 background blobs */
+  background-image:
+    radial-gradient(circle at center, var(--primary-color) 0%, var(--primary-color) 40%, transparent 60%),
+    radial-gradient(circle at center, var(--primary-color) 0%, var(--primary-color) 40%, transparent 60%),
+    radial-gradient(circle at center, var(--primary-color) 0%, var(--primary-color) 40%, transparent 60%);
+
+  background-size: 600px 600px, 800px 800px, 500px 500px;
+  background-repeat: no-repeat;
+
+  -webkit-background-clip: text;
+  background-clip: text;
+
+  /* Animate the gradients to move around similarly to the background blobs */
+  animation: textMaskOrbit 30s linear infinite;
 }
 
-/* For better cross-browser blending we specifically target the text elements */
+@keyframes textMaskOrbit {
+  0% {
+    background-position:
+      -10% -10%,
+      120% 30%,
+      20% 120%;
+  }
+  33% {
+    background-position:
+      120% 30%,
+      20% 120%,
+      -10% -10%;
+  }
+  66% {
+    background-position:
+      20% 120%,
+      -10% -10%,
+      120% 30%;
+  }
+  100% {
+    background-position:
+      -10% -10%,
+      120% 30%,
+      20% 120%;
+  }
+}
+
+/* Ensure headings/paragraphs under the blend inherit transparent so the gradient shows */
 .hero-text-blend h1, .hero-text-blend p {
-  /* Using color-burn on dark grayish-red makes it look normal dark gray on light background,
-     but vibrant red when the blue background passes under it. */
-  color: #3b3030;
+  color: inherit;
 }
 
 .hero-text-blend .tagline {
