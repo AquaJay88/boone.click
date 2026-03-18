@@ -143,18 +143,30 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
 }
 
 /* Hero Section */
+.hero-wrapper {
+  position: relative;
+  margin-bottom: 6rem; /* increased to give room for wave */
+  padding-bottom: 2rem;
+  /* Allow the wave to overflow naturally or adjust as needed */
+  overflow: visible;
+}
+
 .hero {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 4rem;
-  margin-bottom: 4rem;
-  padding-bottom: 3rem;
-  border-bottom: 1px solid var(--border-light);
+  position: relative;
+  /* Removed z-index to avoid establishing a local stacking context that forces image over wave */
+  /* Max width container since wrapper isn't contained */
+  max-width: var(--max-width);
+  margin: 0 auto;
 }
 
 .hero-text {
   flex: 1;
+  position: relative;
+  z-index: 10;
 }
 
 .tagline {
@@ -173,28 +185,36 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
 .hero-image-wrapper {
   flex-shrink: 0;
   position: relative;
+  /* The image should sit behind the wave */
+  z-index: 5;
+  display: flex;
+  align-items: flex-end;
+  /* Push it down slightly so the bottom is obscured by the wave */
+  transform: translateY(2rem);
 }
 
-/* Soft glow border effect */
-.hero-image-wrapper::before {
-  content: '';
+.hero-portrait {
+  width: auto;
+  height: auto;
+  max-height: 500px; /* Big portrait height */
+  object-fit: contain;
+  /* Give it a 3D drop shadow, avoiding hard box-shadows on transparent pngs */
+  filter: drop-shadow(0 15px 25px rgba(0,0,0,0.25));
+}
+
+.hero-wave {
   position: absolute;
-  inset: -8px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--secondary-color-1), var(--secondary-color-2), var(--primary-color));
-  opacity: 0.3;
-  z-index: -1;
-  filter: blur(10px);
-}
-
-.profile-img {
-  width: 220px;
-  height: 220px;
-  object-fit: cover;
-  border-radius: 50%;
-  background-color: #fff;
-  border: 4px solid #fff;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  left: 50%;
+  transform: translateX(-50%) translateY(35%);
+  height: auto;
+  min-height: 200px; /* Gives the wave some body if the viewport is small */
+  /* The wave should sit in front of the image, but behind the text if they overlap */
+  z-index: 8;
+  /* Fill the bottom out if screen is wider than max-width */
+  background-color: transparent;
 }
 
 /* Bento Box Grid */
@@ -390,7 +410,7 @@ footer {
 /* Mobile Responsiveness */
 @media (max-width: 900px) {
   .hero {
-    flex-direction: column-reverse;
+    flex-direction: column;
     text-align: center;
     gap: 2rem;
   }
