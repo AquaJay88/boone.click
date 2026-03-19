@@ -158,7 +158,8 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
 .ribbon-blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(60px);
+  /* Tighter blur to match visible sphere edges, ensuring color affects text accurately */
+  filter: blur(20px);
   opacity: 0.8;
   mix-blend-mode: multiply; /* Helps colors blend richly if they overlap */
   animation-duration: 30s;
@@ -170,7 +171,7 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
 .ribbon-blob-1 {
   width: 400px;
   height: 400px;
-  background-color: var(--secondary-color-1); /* #6fBCCB */
+  background: radial-gradient(circle, var(--secondary-color-1) 0%, transparent 70%); /* #6fBCCB */
   top: 0;
   left: 0;
   animation-name: orbit-1;
@@ -179,7 +180,7 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
 .ribbon-blob-2 {
   width: 500px;
   height: 300px;
-  background-color: var(--secondary-color-2); /* #4576AB */
+  background: radial-gradient(ellipse, var(--secondary-color-2) 0%, transparent 70%); /* #4576AB */
   top: 0;
   left: 0;
   animation-name: orbit-2;
@@ -188,7 +189,7 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
 .ribbon-blob-3 {
   width: 350px;
   height: 350px;
-  background-color: #d4a3a3; /* Desaturated red as requested */
+  background: radial-gradient(circle, #d4a3a3 0%, transparent 70%); /* Desaturated red as requested */
   top: 0;
   left: 0;
   animation-name: orbit-3;
@@ -218,24 +219,24 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
 }
 
 @keyframes orbit-1 {
-  0%   { left: -10%; top: -10%; }
-  33%  { left: 90%; top: 30%; }
-  66%  { left: 20%; top: 90%; }
-  100% { left: -10%; top: -10%; }
+  0%   { transform: translate3d(-10vw, -10vh, 0); }
+  33%  { transform: translate3d(90vw, 30vh, 0); }
+  66%  { transform: translate3d(20vw, 90vh, 0); }
+  100% { transform: translate3d(-10vw, -10vh, 0); }
 }
 
 @keyframes orbit-2 {
-  0%   { left: 90%; top: 30%; }
-  33%  { left: 20%; top: 90%; }
-  66%  { left: -10%; top: -10%; }
-  100% { left: 90%; top: 30%; }
+  0%   { transform: translate3d(90vw, 30vh, 0); }
+  33%  { transform: translate3d(20vw, 90vh, 0); }
+  66%  { transform: translate3d(-10vw, -10vh, 0); }
+  100% { transform: translate3d(90vw, 30vh, 0); }
 }
 
 @keyframes orbit-3 {
-  0%   { left: 20%; top: 90%; }
-  33%  { left: -10%; top: -10%; }
-  66%  { left: 90%; top: 30%; }
-  100% { left: 20%; top: 90%; }
+  0%   { transform: translate3d(20vw, 90vh, 0); }
+  33%  { transform: translate3d(-10vw, -10vh, 0); }
+  66%  { transform: translate3d(90vw, 30vh, 0); }
+  100% { transform: translate3d(20vw, 90vh, 0); }
 }
 
 
@@ -270,59 +271,12 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
 
 /* Mix-Blend-Mode Effect for Text over Ribbon */
 .hero-text-blend {
-  /* mix-blend-mode: overlay keeps dark colors dark but lightens over the bright background */
-  /* To get specifically primary red (#A81313) we need a creative approach */
-  /* If the text is dark, color-burn or hard-light over light blue creates rich contrast */
-  /* For this specific Stripe effect, using color-burn or overlay makes the dark gray text
-     take on a rich hue when it hits the blue background. */
-
-  color: transparent;
-  background-color: var(--text-primary);
-
-  /* Create 3 radial gradients that roughly track the 3 background blobs */
-  background-image:
-    radial-gradient(circle at center, var(--primary-color) 0%, var(--primary-color) 30%, transparent 50%),
-    radial-gradient(circle at center, var(--primary-color) 0%, var(--primary-color) 30%, transparent 50%),
-    radial-gradient(circle at center, var(--primary-color) 0%, var(--primary-color) 30%, transparent 50%);
-
-  background-size: 400px 400px, 500px 300px, 350px 350px;
-  background-repeat: no-repeat;
-
-  -webkit-background-clip: text;
-  background-clip: text;
-
-  /* Animate the gradients to move around similarly to the background blobs */
-  animation: textMaskOrbit 30s linear infinite;
+  color: var(--text-primary);
+  /* Use mix-blend-mode to organically react to the spheres underneath */
+  mix-blend-mode: color-burn;
 }
 
-@keyframes textMaskOrbit {
-  0% {
-    background-position:
-      -10% -10%,
-      120% 30%,
-      20% 120%;
-  }
-  33% {
-    background-position:
-      120% 30%,
-      20% 120%,
-      -10% -10%;
-  }
-  66% {
-    background-position:
-      20% 120%,
-      -10% -10%,
-      120% 30%;
-  }
-  100% {
-    background-position:
-      -10% -10%,
-      120% 30%,
-      20% 120%;
-  }
-}
-
-/* Ensure headings/paragraphs under the blend inherit transparent so the gradient shows */
+/* Ensure headings/paragraphs under the blend inherit color */
 .hero-text-blend h1, .hero-text-blend p {
   color: inherit;
 }
@@ -385,6 +339,8 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
   white-space: nowrap;
   animation: ticker-scroll 60s linear infinite;
   align-items: center;
+  /* Add hardware acceleration */
+  will-change: transform;
 }
 
 .ticker-content span {
@@ -403,8 +359,8 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
 }
 
 @keyframes ticker-scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); } /* Scrolls exactly half of the duplicated content */
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); } /* Scrolls exactly half of the duplicated content */
 }
 
 /* Bento Box Grid */
@@ -413,6 +369,9 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
   grid-template-columns: repeat(12, 1fr);
   gap: 1.5rem;
   margin-bottom: 4rem;
+  /* Ensure the grid sits completely over the background drifting ribbons */
+  position: relative;
+  z-index: 10;
 }
 
 .bento-card {
@@ -573,6 +532,7 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
 /* Section Titles */
 .section-title {
   font-size: 1.5rem;
+  margin-top: 1.5rem;
   margin-bottom: 1.5rem;
   display: flex;
   align-items: center;
