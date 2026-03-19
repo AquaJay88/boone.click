@@ -315,13 +315,46 @@
 
         <!-- Skills Card -->
         <h2 class="section-title">Skills</h2>
-        <div class="bento-card">
+        <div class="bento-card" style="margin-bottom: 2rem;">
           <ul class="bento-list">
             <li><strong>Microsoft Office Specialist</strong><em>Excel certification</em></li>
             <li><strong>Design</strong><em>Adobe Illustrator experience</em></li>
             <li><strong>Communication</strong><em>Internal & external communications</em></li>
             <li><strong>Technical Adaptability</strong><em>Custom tools, 3D printing, laser engraving</em></li>
           </ul>
+        </div>
+
+        <!-- Contact Card -->
+        <h2 class="section-title">Contact</h2>
+        <div class="bento-card" style="position: relative;">
+          <!-- Hidden iframe for background submission -->
+          <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(submitted) {showThankYou();}"></iframe>
+
+          <form action="https://docs.google.com/forms/d/e/1FAIpQLScgLj3NIh4l6cQ_aODgyMLNb6atlAFf9N7AKS-g7Sx8pQz3-w/formResponse" method="POST" target="hidden_iframe" onsubmit="submitted=true;" class="contact-form" id="contactForm">
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="entry.633351163" placeholder="John Doe">
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="text" id="email" name="entry.1974821270" placeholder="john@example.com">
+            </div>
+
+            <div class="form-group">
+              <label for="message">Message</label>
+              <textarea id="message" name="entry.1771557850" placeholder="How can I help you?"></textarea>
+            </div>
+
+            <button type="submit" class="btn">Send Message</button>
+          </form>
+
+          <!-- Thank You Overlay -->
+          <div class="thank-you-overlay" id="thankYouOverlay">
+            <h3>Thank You!</h3>
+            <p>Your message has been sent.</p>
+            <button type="button" class="reset-form-btn" onclick="resetForm()">Fill Out The Form Again</button>
+          </div>
         </div>
 
       </div>
@@ -334,8 +367,30 @@
     <p>&copy; 2024 John Boone. All rights reserved.</p>
   </footer>
 
-  <!-- Accordion JavaScript -->
+  <!-- Page Scripts -->
   <script>
+    // Variable to track if form was submitted
+    var submitted = false;
+
+    // Function to handle showing the thank you overlay
+    function showThankYou() {
+      // Show the overlay
+      document.getElementById('thankYouOverlay').classList.add('active');
+
+      // Reset the submitted flag
+      submitted = false;
+    }
+
+    // Function to handle resetting the form
+    function resetForm() {
+      // Clear the form fields
+      document.getElementById('contactForm').reset();
+
+      // Hide the overlay
+      document.getElementById('thankYouOverlay').classList.remove('active');
+    }
+
+    // Accordion functionality
     function toggleCard(event, card) {
       // Prevent toggling when a link inside the card is clicked
       if (event && event.target.closest('a')) {
