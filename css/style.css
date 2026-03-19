@@ -249,7 +249,6 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
   position: relative;
   margin-bottom: 0;
   padding-bottom: 0;
-  overflow: hidden;
 }
 
 .hero {
@@ -282,11 +281,11 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
 
   /* Create 3 radial gradients that roughly track the 3 background blobs */
   background-image:
-    radial-gradient(circle at center, var(--primary-color) 0%, var(--primary-color) 40%, transparent 60%),
-    radial-gradient(circle at center, var(--primary-color) 0%, var(--primary-color) 40%, transparent 60%),
-    radial-gradient(circle at center, var(--primary-color) 0%, var(--primary-color) 40%, transparent 60%);
+    radial-gradient(circle at center, var(--primary-color) 0%, var(--primary-color) 30%, transparent 50%),
+    radial-gradient(circle at center, var(--primary-color) 0%, var(--primary-color) 30%, transparent 50%),
+    radial-gradient(circle at center, var(--primary-color) 0%, var(--primary-color) 30%, transparent 50%);
 
-  background-size: 600px 600px, 800px 800px, 500px 500px;
+  background-size: 400px 400px, 500px 300px, 350px 350px;
   background-repeat: no-repeat;
 
   -webkit-background-clip: text;
