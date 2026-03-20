@@ -696,13 +696,13 @@ footer {
 
   /* Apply the mask using the same radial gradients as the background blobs */
   -webkit-mask-image:
-    radial-gradient(circle, black 0%, transparent 70%),
-    radial-gradient(ellipse, black 0%, transparent 70%),
-    radial-gradient(circle, black 0%, transparent 70%);
+    radial-gradient(circle, black 0%, black 10%, transparent 85%),
+    radial-gradient(ellipse, black 0%, black 10%, transparent 85%),
+    radial-gradient(circle, black 0%, black 10%, transparent 85%);
   mask-image:
-    radial-gradient(circle, black 0%, transparent 70%),
-    radial-gradient(ellipse, black 0%, transparent 70%),
-    radial-gradient(circle, black 0%, transparent 70%);
+    radial-gradient(circle, black 0%, black 10%, transparent 85%),
+    radial-gradient(ellipse, black 0%, black 10%, transparent 85%),
+    radial-gradient(circle, black 0%, black 10%, transparent 85%);
 
   /* Use the same sizes as the ribbon-blobs */
   -webkit-mask-size: 400px 400px, 500px 300px, 350px 350px;
