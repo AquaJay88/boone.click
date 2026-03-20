@@ -271,9 +271,12 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
 
 /* Mix-Blend-Mode Effect for Text over Ribbon */
 .hero-text-blend {
-  color: var(--text-primary);
-  /* Use mix-blend-mode to organically react to the spheres underneath */
-  mix-blend-mode: color-burn;
+  /* Clever trick: Mathematical inverse of #494949 is #B6B6B6.
+     When combined with mix-blend-mode: difference over a white (#FFFFFF) background,
+     the resulting text color is exactly #494949. Over colored blobs, it dynamically shifts. */
+  color: #B6B6B6;
+  /* Use difference to organically react to the spheres underneath, ensuring readability */
+  mix-blend-mode: difference;
 }
 
 /* Ensure headings/paragraphs under the blend inherit color */
@@ -283,7 +286,7 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
 
 .hero-text-blend .tagline {
   font-size: 1.25rem;
-  color: var(--primary-color);
+  color: #57ECEC;
   font-weight: 600;
   margin-bottom: 1.5rem;
   display: block;
