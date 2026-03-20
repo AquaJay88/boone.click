@@ -809,7 +809,7 @@ footer {
   background: radial-gradient(circle, var(--secondary-color-1) 0%, transparent 70%);
   top: 0;
   left: 0;
-  animation-name: menu-orbit-1;
+  animation-name: menu-orbit-1-closed;
 }
 
 .menu-blob-2 {
@@ -818,7 +818,7 @@ footer {
   background: radial-gradient(ellipse, var(--secondary-color-2) 0%, transparent 70%);
   top: 0;
   left: 0;
-  animation-name: menu-orbit-2;
+  animation-name: menu-orbit-2-closed;
 }
 
 .menu-blob-3 {
@@ -827,7 +827,19 @@ footer {
   background: radial-gradient(circle, #d4a3a3 0%, transparent 70%);
   top: 0;
   left: 0;
-  animation-name: menu-orbit-3;
+  animation-name: menu-orbit-3-closed;
+}
+
+.floating-menu.active .menu-blob-1 {
+  animation-name: menu-orbit-1-open;
+}
+
+.floating-menu.active .menu-blob-2 {
+  animation-name: menu-orbit-2-open;
+}
+
+.floating-menu.active .menu-blob-3 {
+  animation-name: menu-orbit-3-open;
 }
 
 .menu-texture {
@@ -851,25 +863,46 @@ footer {
   -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 60%);
 }
 
-@keyframes menu-orbit-1 {
-  0%   { transform: translate3d(-60%, -60%, 0); }
-  33%  { transform: translate3d(80%, 20%, 0); }
-  66%  { transform: translate3d(20%, 80%, 0); }
-  100% { transform: translate3d(-60%, -60%, 0); }
+@keyframes menu-orbit-1-closed {
+  0%   { transform: translate3d(-30px, -30px, 0); }
+  33%  { transform: translate3d(30px, 10px, 0); }
+  66%  { transform: translate3d(10px, 30px, 0); }
+  100% { transform: translate3d(-30px, -30px, 0); }
 }
 
-@keyframes menu-orbit-2 {
-  0%   { transform: translate3d(80%, 20%, 0); }
-  33%  { transform: translate3d(20%, 80%, 0); }
-  66%  { transform: translate3d(-60%, -60%, 0); }
-  100% { transform: translate3d(80%, 20%, 0); }
+@keyframes menu-orbit-2-closed {
+  0%   { transform: translate3d(30px, 10px, 0); }
+  33%  { transform: translate3d(10px, 30px, 0); }
+  66%  { transform: translate3d(-30px, -30px, 0); }
+  100% { transform: translate3d(30px, 10px, 0); }
 }
 
-@keyframes menu-orbit-3 {
-  0%   { transform: translate3d(20%, 80%, 0); }
-  33%  { transform: translate3d(-60%, -60%, 0); }
-  66%  { transform: translate3d(80%, 20%, 0); }
-  100% { transform: translate3d(20%, 80%, 0); }
+@keyframes menu-orbit-3-closed {
+  0%   { transform: translate3d(10px, 30px, 0); }
+  33%  { transform: translate3d(-30px, -30px, 0); }
+  66%  { transform: translate3d(30px, 10px, 0); }
+  100% { transform: translate3d(10px, 30px, 0); }
+}
+
+@keyframes menu-orbit-1-open {
+  0%   { transform: translate3d(-100px, -120px, 0); }
+  33%  { transform: translate3d(120px, 0px, 0); }
+  66%  { transform: translate3d(0px, 140px, 0); }
+  100% { transform: translate3d(-100px, -120px, 0); }
+}
+
+@keyframes menu-orbit-2-open {
+  0%   { transform: translate3d(120px, 0px, 0); }
+  33%  { transform: translate3d(0px, 140px, 0); }
+  66%  { transform: translate3d(-100px, -120px, 0); }
+  100% { transform: translate3d(120px, 0px, 0); }
+}
+
+@keyframes menu-orbit-3-open {
+  0%   { transform: translate3d(0px, 140px, 0); }
+  33%  { transform: translate3d(-100px, -120px, 0); }
+  66%  { transform: translate3d(120px, 0px, 0); }
+  100% { transform: translate3d(0px, 140px, 0); }
 }
 
 /* Mobile Responsiveness */
