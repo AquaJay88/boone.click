@@ -263,41 +263,42 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
   padding-bottom: 0;
 }
 
-.hero-text {
+.hero-text-grid {
   flex: 1;
   position: relative;
   z-index: 10;
+  display: grid;
+  /* Place all items perfectly on top of each other in the exact same cell */
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
 }
 
-/* Mix-Blend-Mode Effect for Text over Ribbon */
-.hero-text-blend {
-  /* Clever trick: Mathematical inverse of #494949 is #B6B6B6.
-     When combined with mix-blend-mode: difference over a white (#FFFFFF) background,
-     the resulting text color is exactly #494949. Over colored blobs, it dynamically shifts. */
-  color: #B6B6B6;
-  /* Use difference to organically react to the spheres underneath, ensuring readability */
-  mix-blend-mode: difference;
+.hero-text {
+  /* Both layers sit in row 1, column 1, guaranteeing perfect alignment */
+  grid-area: 1 / 1;
+  /* Reset relative positioning so children stack natively in grid */
+  position: static;
 }
 
-/* Ensure headings/paragraphs under the blend inherit color */
-.hero-text-blend h1, .hero-text-blend p {
-  color: inherit;
-}
-
-.hero-text-blend .tagline {
+.hero-text .tagline {
   font-size: 1.25rem;
-  color: #57ECEC;
   font-weight: 600;
   margin-bottom: 1.5rem;
   display: block;
-  /* Disable blend mode on the already red tagline so it stays red */
-  mix-blend-mode: normal;
 }
 
 .hero-text p {
   font-size: 1.15rem;
   max-width: 600px;
-  /* Ensure paragraph text is affected by blend mode */
+}
+
+/* Base Text Styles (Dark Gray) */
+.base-text h1, .base-text p {
+  color: var(--text-primary);
+}
+
+.base-text .tagline {
+  color: var(--primary-color);
 }
 
 .hero-image-wrapper {
@@ -683,4 +684,53 @@ footer {
   h1 { font-size: 2rem; }
   .bento-card { padding: 1.5rem; }
   .nav-links { gap: 1rem; }
+}
+/* Masked Text Styles (Brand Red text that appears over blobs) */
+.masked-text h1, .masked-text p, .masked-text .tagline {
+  color: var(--primary-color);
+}
+
+.masked-text {
+  /* Disable pointer events so it doesn't block clicks on links in the base text */
+  pointer-events: none;
+
+  /* Apply the mask using the same radial gradients as the background blobs */
+  -webkit-mask-image:
+    radial-gradient(circle, black 0%, transparent 70%),
+    radial-gradient(ellipse, black 0%, transparent 70%),
+    radial-gradient(circle, black 0%, transparent 70%);
+  mask-image:
+    radial-gradient(circle, black 0%, transparent 70%),
+    radial-gradient(ellipse, black 0%, transparent 70%),
+    radial-gradient(circle, black 0%, transparent 70%);
+
+  /* Use the same sizes as the ribbon-blobs */
+  -webkit-mask-size: 400px 400px, 500px 300px, 350px 350px;
+  mask-size: 400px 400px, 500px 300px, 350px 350px;
+
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+
+  /* Animate the mask positions to mimic the blob orbits */
+  animation: mask-orbits 30s linear infinite;
+}
+
+/* We combine the 3 blob animations into a single mask-position animation */
+@keyframes mask-orbits {
+  0% {
+    -webkit-mask-position: -10vw -10vh, 90vw 30vh, 20vw 90vh;
+    mask-position: -10vw -10vh, 90vw 30vh, 20vw 90vh;
+  }
+  33% {
+    -webkit-mask-position: 90vw 30vh, 20vw 90vh, -10vw -10vh;
+    mask-position: 90vw 30vh, 20vw 90vh, -10vw -10vh;
+  }
+  66% {
+    -webkit-mask-position: 20vw 90vh, -10vw -10vh, 90vw 30vh;
+    mask-position: 20vw 90vh, -10vw -10vh, 90vw 30vh;
+  }
+  100% {
+    -webkit-mask-position: -10vw -10vh, 90vw 30vh, 20vw 90vh;
+    mask-position: -10vw -10vh, 90vw 30vh, 20vw 90vh;
+  }
 }
