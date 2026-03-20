@@ -793,9 +793,13 @@ footer {
   filter: blur(10px); /* Scaled down blur */
   opacity: 0.8;
   mix-blend-mode: multiply;
-  animation-duration: 5s; /* Scaled down duration */
+  animation-duration: 13s; /* Scaled down duration */
   animation-timing-function: linear;
   animation-iteration-count: infinite;
+}
+
+.floating-menu.active .menu-blob {
+  animation-duration: 8s;
 }
 
 .menu-blob-1 {
@@ -847,24 +851,24 @@ footer {
 }
 
 @keyframes menu-orbit-1 {
-  0%   { transform: translate3d(-20%, -20%, 0); }
-  33%  { transform: translate3d(50%, 20%, 0); }
-  66%  { transform: translate3d(10%, 60%, 0); }
-  100% { transform: translate3d(-20%, -20%, 0); }
+  0%   { transform: translate3d(-60%, -60%, 0); }
+  33%  { transform: translate3d(80%, 20%, 0); }
+  66%  { transform: translate3d(20%, 80%, 0); }
+  100% { transform: translate3d(-60%, -60%, 0); }
 }
 
 @keyframes menu-orbit-2 {
-  0%   { transform: translate3d(50%, 20%, 0); }
-  33%  { transform: translate3d(10%, 60%, 0); }
-  66%  { transform: translate3d(-20%, -20%, 0); }
-  100% { transform: translate3d(50%, 20%, 0); }
+  0%   { transform: translate3d(80%, 20%, 0); }
+  33%  { transform: translate3d(20%, 80%, 0); }
+  66%  { transform: translate3d(-60%, -60%, 0); }
+  100% { transform: translate3d(80%, 20%, 0); }
 }
 
 @keyframes menu-orbit-3 {
-  0%   { transform: translate3d(10%, 60%, 0); }
-  33%  { transform: translate3d(-20%, -20%, 0); }
-  66%  { transform: translate3d(50%, 20%, 0); }
-  100% { transform: translate3d(10%, 60%, 0); }
+  0%   { transform: translate3d(20%, 80%, 0); }
+  33%  { transform: translate3d(-60%, -60%, 0); }
+  66%  { transform: translate3d(80%, 20%, 0); }
+  100% { transform: translate3d(20%, 80%, 0); }
 }
 
 /* Mobile Responsiveness */
