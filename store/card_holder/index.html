@@ -7,7 +7,9 @@
   <link rel="stylesheet" href="../../css/style.css">
   <!-- Include a lightweight icon set -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script async src="https://js.stripe.com/v3/buy-button.js"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="../products.js"></script>
+  <script src="../cart.js"></script>
   <style>
     /* Product Page Specific Styles */
     .product-page-container {
@@ -278,11 +280,9 @@
 
         <!-- Checkout Action -->
         <div class="buy-btn-container">
-          <stripe-buy-button
-            buy-button-id="buy_btn_1TDO64BA6S4OMIQxxRUIR2kd"
-            publishable-key="pk_live_51TDC2lBA6S4OMIQx9F6TnP7bhrlGTSJXDAvcNrTuqdCd5YKY016GAB5yqVHYKHlDyxe8EA5XvrkK7Tcm2dIsjVvU00s04IK7B3"
-          >
-          </stripe-buy-button>
+          <button class="btn buy-btn add-to-cart-btn" onclick="window.addToCart(state.priceId, state.sizeVal + 'mm', state.colorVal)">
+            Add to Cart
+          </button>
         </div>
 
       </div>
@@ -295,26 +295,33 @@
     <p>&copy; 2024 John Boone. All rights reserved.</p>
   </footer>
 
-  <!-- Floating Mobile Menu -->
-  <div class="floating-menu" id="floatingMenu">
+  <!-- Floating Cart Menu -->
+  <div class="floating-cart" id="floatingCartMenu">
     <!-- Localized Animation Background -->
-    <div class="menu-background">
-      <div class="menu-blob menu-blob-1"></div>
-      <div class="menu-blob menu-blob-2"></div>
-      <div class="menu-blob menu-blob-3"></div>
-      <div class="menu-texture"></div>
+    <div class="cart-background">
+      <div class="cart-blob cart-blob-1"></div>
+      <div class="cart-blob cart-blob-2"></div>
+      <div class="cart-blob cart-blob-3"></div>
+      <div class="cart-texture"></div>
     </div>
 
     <!-- Menu Controls & Content -->
-    <div class="menu-content">
-      <button class="menu-toggle-btn" id="menuToggleBtn" aria-label="Toggle Navigation Menu">
-        <i class="fa-solid fa-bars open-icon"></i>
+    <div class="cart-content-wrapper">
+      <button class="cart-toggle-btn" id="cartToggleBtn" aria-label="Toggle Cart">
+        <i class="fa-solid fa-cart-shopping open-icon"></i>
         <i class="fa-solid fa-xmark close-icon"></i>
+        <span class="cart-badge" id="cartBadge">0</span>
       </button>
 
-      <div class="menu-links" id="menuLinks">
-        <a href="../index.html" class="menu-link">Store Home</a>
-        <a href="index.html" class="menu-link">Premium Card Holder</a>
+      <div class="cart-dropdown-inner" id="cartDropdownInner">
+        <h3 class="cart-title">Your Cart</h3>
+        <div class="cart-items" id="cartItems">
+          <!-- Items will be injected here by cart.js -->
+        </div>
+        <div class="cart-footer">
+          <div class="cart-total" id="cartTotal">Total: $0.00</div>
+          <button class="btn btn-checkout" id="checkoutBtn">Checkout</button>
+        </div>
       </div>
     </div>
   </div>
@@ -328,14 +335,6 @@
       colorVal: 'black',
       displayPrice: '$15.00'
     };
-
-    // Mobile menu toggle
-    const menuToggleBtn = document.getElementById('menuToggleBtn');
-    const floatingMenu = document.getElementById('floatingMenu');
-
-    menuToggleBtn.addEventListener('click', function() {
-      floatingMenu.classList.toggle('active');
-    });
 
     // Handle Option Selection
     function selectOption(type, buttonEl) {
