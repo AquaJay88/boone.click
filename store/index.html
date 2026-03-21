@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="../css/style.css">
   <!-- Include a lightweight icon set -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script async src="https://js.stripe.com/v3/buy-button.js"></script>
   <style>
     /* Additional Store Specific Styles */
     .product-highlight {
@@ -145,14 +146,15 @@
               </p>
 
               <div class="store-actions">
-                <button class="btn" id="quickCheckoutBtn" onclick="quickCheckout()">
-                  Quick Checkout (35mm Black)
-                </button>
+                <stripe-buy-button
+                  buy-button-id="buy_btn_1TDO64BA6S4OMIQxxRUIR2kd"
+                  publishable-key="pk_live_51TDC2lBA6S4OMIQx9F6TnP7bhrlGTSJXDAvcNrTuqdCd5YKY016GAB5yqVHYKHlDyxe8EA5XvrkK7Tcm2dIsjVvU00s04IK7B3"
+                >
+                </stripe-buy-button>
                 <a href="card_holder/index.html" class="btn btn-secondary">
                   See More Details
                 </a>
               </div>
-              <div id="checkoutError" style="color: red; margin-top: 10px; display: none;"></div>
             </div>
 
             <div class="product-image-container" style="margin: 2rem;">
@@ -203,50 +205,6 @@
     menuToggleBtn.addEventListener('click', function() {
       floatingMenu.classList.toggle('active');
     });
-
-    // Quick Checkout Function
-    async function quickCheckout() {
-      const btn = document.getElementById('quickCheckoutBtn');
-      const errorDiv = document.getElementById('checkoutError');
-
-      btn.disabled = true;
-      btn.textContent = 'Processing...';
-      errorDiv.style.display = 'none';
-
-      // Default quick checkout values
-      const priceId = 'price_1TDDCZBA6S4OMIQxHyH3GX9u'; // 35mm
-      const color = 'Black';
-
-      try {
-        const response = await fetch('https://alfszmccbxndsrronyfe.supabase.co/functions/v1/create-checkout', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsZnN6bWNjYnhuZHNycm9ueWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNTIyNTAsImV4cCI6MjA4OTYyODI1MH0.C9JQtbbYR01LMh2ywsIGnsslKm9o18kdoQGsyyVZzMI'
-          },
-          body: JSON.stringify({ priceId, color }),
-        });
-
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.error || 'Failed to create checkout session');
-        }
-
-        const data = await response.json();
-
-        if (data.url) {
-          window.location.href = data.url;
-        } else {
-          throw new Error('No checkout URL returned');
-        }
-      } catch (error) {
-        console.error('Checkout error:', error);
-        errorDiv.textContent = error.message || 'An error occurred during checkout. Please try again.';
-        errorDiv.style.display = 'block';
-        btn.disabled = false;
-        btn.textContent = 'Quick Checkout (35mm Black)';
-      }
-    }
   </script>
 
 </body>
