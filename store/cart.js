@@ -3,7 +3,7 @@
 // Using localStorage to persist the cart
 let cart = JSON.parse(localStorage.getItem('boone_cart')) || [];
 
-const publishableKey = "pk_live_51TDC2lBA6S4OMIQx9F6TnP7bhrlGTSJXDAvcNrTuqdCd5YKY016GAB5yqVHYKHlDyxe8EA5XvrkK7Tcm2dIsjVvU00s04IK7B3";
+const publishableKey = "pk_test_51TDC2lBA6S4OMIQxQJjaqJrlyCZF7U5FZHC8F6FRwvJlSOSA0K4SrZuYEz546ouV6V5ehxDEklTRbvZzpgcDK3Er00nBtr4SRw";
 
 // Initialize Stripe (requires Stripe.js to be loaded on the page)
 // No longer using direct client-side Stripe initialization since we're using Supabase
