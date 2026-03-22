@@ -107,8 +107,8 @@
       </div>
       <!-- Right-aligned links -->
       <div class="nav-links" style="margin-left: auto;">
-        <a href="index.html" class="nav-link active">All</a>
-        <a href="games.html" class="nav-link">Games</a>
+        <a href="index.html" class="nav-link">All</a>
+        <a href="games.html" class="nav-link active">Games</a>
         <a href="books.html" class="nav-link">Books</a>
         <a href="other.html" class="nav-link">Other</a>
       </div>
@@ -258,7 +258,8 @@
       const productGrid = document.getElementById('productGrid');
 
       // Sort catalog alphabetically by name
-      const sortedCatalog = [...CATALOG].sort((a, b) => a.name.localeCompare(b.name));
+      const filteredCatalog = CATALOG.filter(p => p.category === 'Games');
+      const sortedCatalog = [...filteredCatalog].sort((a, b) => a.name.localeCompare(b.name));
 
       sortedCatalog.forEach(product => {
         const productHTML = `
