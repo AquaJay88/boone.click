@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Premium Card Holder | Boone Store</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <!-- Include a lightweight icon set -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="../products.js"></script>
+  <script src="../cart.js"></script>
+  <style>
+    /* Product Page Specific Styles */
+
+    .main-image-container {
+      width: 100%;
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      background-color: #f8f8f8; /* Soft background */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      max-height: 600px;
+      /* Teal border with 0.5rem width */
+      border: 0.5rem solid #6FBCCB;
+    }
+
+    .main-image-container:hover .nav-arrow {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .nav-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.5);
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #333;
+      transition: opacity 0.2s, visibility 0.2s, background 0.2s;
+      /* Hidden by default */
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .product-page-container {
+      gap: 3rem;
+      padding: 2rem 0;
+    }
+
+    /* Left side: Images */
+    .product-images {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: sticky;
+      top: 100px; /* Keep it below navbar */
+      align-self: start;
+    }
+
+
+
+    .main-image-container img {
+      max-width: 100%;
+      max-height: 600px;
+      object-fit: contain;
+      display: block;
+      transition: opacity 0.3s ease;
+    }
+
+    .loading-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      color: var(--primary-color);
+      display: none;
+    }
+
+    /* Right side: Details */
+    .product-details {
+      flex: 1;
+      padding: 0 1rem;
+    }
+
+    .product-title {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-color);
+    }
+
+    .breadcrumb {
+      font-size: 0.7rem;
+      margin-bottom: 0.6rem;
+    }
+    .breadcrumb span, .breadcrumb a {
+      margin-right: 0.15rem;
+    }
+
+    .product-title {
+      padding-top: 2rem;
+    }
+
+    .carousel-container {
+      margin-top: 1rem;
+      width: 100%;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+    }
+
+    .carousel-track {
+      display: flex;
+      gap: 0.5rem;
+      padding-bottom: 0.5rem; /* for scrollbar */
+    }
+
+    .carousel-item {
+      flex: 0 0 80px;
+      height: 80px;
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.2s, border 0.2s;
+      border: 2px solid transparent;
+    }
+
+    .carousel-item.active, .carousel-item:hover {
+      opacity: 1;
+      border-color: var(--primary-color);
+    }
+
+    .carousel-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+
+
+    .nav-arrow:hover {
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .nav-arrow.left {
+      left: 10px;
+    }
+
+    .nav-arrow.right {
+      right: 10px;
+    }
+
+
+    .product-price {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: var(--primary-color);
+      margin-bottom: 1.5rem;
+    }
+
+    .product-description {
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+    }
+
+    .selection-group {
+      margin-bottom: 2rem;
+    }
+
+    .selection-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: var(--text-color);
+    }
+
+    /* Selection Buttons grid */
+    .options-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .option-btn {
+      padding: 0.75rem 1.25rem;
+      border: 2px solid #ddd;
+      border-radius: var(--border-radius);
+      background: transparent;
+      color: var(--text-color);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      font-size: 1rem;
+    }
+
+    .option-btn:hover {
+      border-color: var(--primary-color);
+    }
+
+    .option-btn.selected {
+      border-color: var(--primary-color);
+      background-color: var(--primary-color);
+      color: white;
+      box-shadow: 0 4px 12px var(--shadow-color);
+    }
+
+    /* Color dots inside buttons */
+    .color-dot {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+      border: 1px solid rgba(0,0,0,0.2);
+    }
+
+    .buy-btn-container {
+      margin-top: 3rem;
+    }
+
+    .buy-btn {
+      width: 100%;
+      font-size: 1.25rem;
+      padding: 1.25rem;
+    }
+
+    #checkoutError {
+      color: red;
+      margin-top: 1rem;
+      text-align: center;
+      display: none;
+      padding: 1rem;
+      background: #ffeeee;
+      border-radius: var(--border-radius);
+    }
+
+    .breadcrumb {
+      margin-bottom: 2rem;
+      color: var(--text-muted);
+    }
+    .breadcrumb a {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo"><img src="../../images/JB Red.png" alt="JB Logo" style="height: 1.2em; margin-right: 0.5em; vertical-align: middle;"><span class="craftsman-font" style="vertical-align: middle;">Craftsman</span></div>
+      <div class="nav-links">
+        <div class="nav-dropdown">
+          <a href="../index.html" class="nav-link active">Store <i class="fa-solid fa-chevron-down" style="font-size: 0.8em; margin-left: 0.25rem;"></i></a>
+          <div class="nav-dropdown-content">
+            <a href="index.html" class="nav-dropdown-item">Premium Card Holder</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container" style="padding-top: 90px; padding-bottom: 60px;">
+
+    <div class="breadcrumb">
+      <a href="../index.html">Store</a> &gt; <span>Premium Card Holder</span>
+    </div>
+
+    <!-- Product Layout -->
+    <div class="product-page-container bento-grid" style="margin:0;">
+
+      <!-- Images Side -->
+      <div class="product-images col-span-6">
+        <div class="main-image-container bento-card" style="position: relative;">
+          <img id="mainProductImage" src="../../images/card_holders/ch_all_2.jpeg" alt="Premium Card Holder">
+          <div class="loading-overlay" id="imageLoadingOverlay">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+          </div>
+          <button class="nav-arrow left" onclick="prevImage()"><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="nav-arrow right" onclick="nextImage()"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+
+        <!-- Carousel -->
+        <div class="carousel-container" id="carouselContainer">
+          <div class="carousel-track" id="carouselTrack">
+            <!-- Dynamically injected images go here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Details Side -->
+      <div class="product-details col-span-6 bento-card">
+        <h1 class="product-title">Premium Card Holder</h1>
+        <div class="product-price" id="priceDisplay">$15.00</div>
+
+        <p class="product-description">
+          Designed for simplicity and built to last. This minimalist card holder keeps your essentials secure without the bulk. Whether you need a compact carrier for a night out or a streamlined daily driver, select the size that fits your needs and the color that fits your style.
+        </p>
+
+        <!-- Size Selection -->
+        <div class="selection-group">
+          <label class="selection-label">Size (Thickness / Capacity)</label>
+          <div class="options-grid" id="sizeOptions">
+            <!-- Data attributes store the Stripe Price ID and standard price for display -->
+            <button class="option-btn" data-type="size" data-id="price_1TDD4KBA6S4OMIQxlwcdg1TE" data-val="19" data-price="$15.00" onclick="selectOption('size', this)">19mm</button>
+            <button class="option-btn" data-type="size" data-id="price_1TDDBgBA6S4OMIQxBELX2uYT" data-val="25" data-price="$15.00" onclick="selectOption('size', this)">25mm</button>
+            <button class="option-btn selected" data-type="size" data-id="price_1TDDCZBA6S4OMIQxHyH3GX9u" data-val="35" data-price="$15.00" onclick="selectOption('size', this)">35mm</button>
+            <button class="option-btn" data-type="size" data-id="price_1TDDD7BA6S4OMIQxJX8gUESg" data-val="41" data-price="$15.00" onclick="selectOption('size', this)">41mm</button>
+            <button class="option-btn" data-type="size" data-id="price_1TDDDdBA6S4OMIQxE23U85qe" data-val="53.5" data-price="$15.00" onclick="selectOption('size', this)">53.5mm</button>
+          </div>
+        </div>
+
+        <!-- Color Selection -->
+        <div class="selection-group">
+          <label class="selection-label">Color</label>
+          <div class="options-grid" id="colorOptions">
+            <!-- Colors are mapped to lowercase values for image URL building -->
+            <button class="option-btn selected" data-type="color" data-val="black" onclick="selectOption('color', this)">
+              Black
+            </button>
+            <button class="option-btn" data-type="color" data-val="blue" onclick="selectOption('color', this)">
+              Blue
+            </button>
+            <button class="option-btn" data-type="color" data-val="brown" onclick="selectOption('color', this)">
+              Brown
+            </button>
+            <button class="option-btn" data-type="color" data-val="green" onclick="selectOption('color', this)">
+              Green
+            </button>
+            <button class="option-btn" data-type="color" data-val="grey" onclick="selectOption('color', this)">
+              Grey
+            </button>
+            <button class="option-btn" data-type="color" data-val="orange" onclick="selectOption('color', this)">
+              Orange
+            </button>
+            <button class="option-btn" data-type="color" data-val="purple" onclick="selectOption('color', this)">
+              Purple
+            </button>
+            <button class="option-btn" data-type="color" data-val="red" onclick="selectOption('color', this)">
+              Red
+            </button>
+            <button class="option-btn" data-type="color" data-val="white" onclick="selectOption('color', this)">
+              White
+            </button>
+            <button class="option-btn" data-type="color" data-val="yellow" onclick="selectOption('color', this)">
+              Yellow
+            </button>
+          </div>
+        </div>
+
+        <!-- Checkout Action -->
+        <div class="buy-btn-container">
+          <button class="btn buy-btn add-to-cart-btn" onclick="window.addToCart(state.priceId, state.sizeVal + 'mm', state.colorVal)">
+            Add to Cart
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <footer>
+    <p>&copy; 2024 John Boone. All rights reserved.</p>
+  </footer>
+
+  <!-- Floating Cart Menu -->
+  <div class="floating-cart" id="floatingCartMenu">
+    <!-- Localized Animation Background -->
+    <div class="cart-background">
+      <div class="cart-blob cart-blob-1"></div>
+      <div class="cart-blob cart-blob-2"></div>
+      <div class="cart-blob cart-blob-3"></div>
+      <div class="cart-texture"></div>
+    </div>
+
+    <!-- Menu Controls & Content -->
+    <div class="cart-content-wrapper">
+      <button class="cart-toggle-btn" id="cartToggleBtn" aria-label="Toggle Cart">
+        <i class="fa-solid fa-cart-shopping open-icon"></i>
+        <i class="fa-solid fa-xmark close-icon"></i>
+        <span class="cart-badge" id="cartBadge">0</span>
+      </button>
+
+      <div class="cart-dropdown-inner" id="cartDropdownInner">
+        <h3 class="cart-title">Your Cart</h3>
+        <div class="cart-items" id="cartItems">
+          <!-- Items will be injected here by cart.js -->
+        </div>
+        <div class="cart-footer">
+          <div class="cart-total" id="cartTotal">Total: $0.00</div>
+          <button class="btn btn-checkout" id="checkoutBtn">Checkout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page Scripts -->
+  <script>
+    let state = {
+      sizeVal: '35',
+      priceId: 'price_1TDDCZBA6S4OMIQxHyH3GX9u',
+      colorVal: 'black',
+      displayPrice: '$15.00'
+    };
+
+    const imagesList = [
+      "ch_19_blue.jpeg",
+      "ch_35_black.jpeg",
+      "ch_35_red.jpeg",
+      "ch_41_grey.jpeg",
+      "ch_53.5_green.jpeg",
+      "ch_all_1.jpeg",
+      "ch_all_2.jpeg",
+      "ch_multiple_1.jpeg",
+      "ch_multiple_2.jpeg",
+      "ch_multiple_open.jpeg"
+    ];
+
+    let currentImageIndex = 0;
+
+    // Handle Option Selection
+    function selectOption(type, buttonEl) {
+      // Remove selected class from all siblings
+      const container = document.getElementById(`${type}Options`);
+      const buttons = container.querySelectorAll('.option-btn');
+      buttons.forEach(btn => btn.classList.remove('selected'));
+
+      // Add selected class to clicked button
+      buttonEl.classList.add('selected');
+
+      // Update state
+      if (type === 'size') {
+        state.sizeVal = buttonEl.getAttribute('data-val');
+        state.priceId = buttonEl.getAttribute('data-id');
+        state.displayPrice = buttonEl.getAttribute('data-price');
+        document.getElementById('priceDisplay').textContent = state.displayPrice;
+      } else if (type === 'color') {
+        state.colorVal = buttonEl.getAttribute('data-val');
+      }
+
+      attemptAutoSelectImageByColor();
+    }
+
+
+    function attemptAutoSelectImageByColor() {
+      const color = state.colorVal.toLowerCase();
+      const colorTarget = `_${color}.jpeg`;
+      const foundIndex = imagesList.findIndex(img => img.endsWith(colorTarget) || img.includes(`_${color}`));
+
+      if (foundIndex !== -1) {
+        goToImage(foundIndex);
+      }
+    }
+
+
+    function initCarousel() {
+      const track = document.getElementById('carouselTrack');
+      imagesList.forEach((imgSrc, index) => {
+        const div = document.createElement('div');
+        div.className = `carousel-item ${index === 0 ? 'active' : ''}`;
+        div.onclick = () => goToImage(index);
+        const img = document.createElement('img');
+        img.src = `../../images/card_holders/${imgSrc}`;
+        div.appendChild(img);
+        track.appendChild(div);
+      });
+    }
+
+
+    function goToImage(index) {
+      if (index < 0) index = imagesList.length - 1;
+      if (index >= imagesList.length) index = 0;
+      currentImageIndex = index;
+
+      const imgEl = document.getElementById('mainProductImage');
+
+      // Simple fade effect
+      imgEl.style.opacity = 0.5;
+      setTimeout(() => {
+        imgEl.src = `../../images/card_holders/${imagesList[currentImageIndex]}`;
+        imgEl.style.opacity = 1;
+      }, 150);
+
+      const track = document.getElementById('carouselTrack');
+      const items = track.querySelectorAll('.carousel-item');
+      items.forEach(item => item.classList.remove('active'));
+      items[currentImageIndex].classList.add('active');
+
+      // Auto-scroll the active thumbnail into view
+      items[currentImageIndex].scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center'
+      });
+    }
+
+
+    function prevImage() { goToImage(currentImageIndex - 1); }
+    function nextImage() { goToImage(currentImageIndex + 1); }
+
+    // Initialize image on load
+    window.onload = function() {
+      initCarousel();
+      goToImage(0);
+    };
+  </script>
+
+</body>
+</html>
