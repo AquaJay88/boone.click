@@ -426,27 +426,16 @@
     };
 
     const imagesList = [
-      "ch_all_2.jpeg",
-      "ch_all.jpeg",
-      "ch_black.jpeg",
-      "ch_blue.jpeg",
-      "ch_brown.jpeg",
-      "ch_green.jpeg",
-      "ch_grey.jpeg",
-      "ch_orange.jpeg",
-      "ch_purple.jpeg",
-      "ch_red.jpeg",
-      "ch_white.jpeg",
-      "ch_yellow.jpeg",
-      "ch_19_black.jpeg",
-      "ch_25_black.jpeg",
+      "ch_19_blue.jpeg",
       "ch_35_black.jpeg",
-      "ch_41_black.jpeg",
-      "ch_53.5_black.jpeg",
-      "ch_front.jpeg",
-      "ch_side.jpeg",
-      "ch_top.jpeg",
-      "ch_stack.jpeg"
+      "ch_35_red.jpeg",
+      "ch_41_grey.jpeg",
+      "ch_53.5_green.jpeg",
+      "ch_all_1.jpeg",
+      "ch_all_2.jpeg",
+      "ch_multiple_1.jpeg",
+      "ch_multiple_2.jpeg",
+      "ch_multiple_open.jpeg"
     ];
 
     let currentImageIndex = 0;
@@ -476,24 +465,9 @@
 
 
     function attemptAutoSelectImageByColor() {
-      const size = state.sizeVal;
       const color = state.colorVal.toLowerCase();
-
-      // Try to find exact size and color
-      const exactTarget = `_${size}_${color}.jpeg`;
-      let foundIndex = imagesList.findIndex(img => img.endsWith(exactTarget));
-
-      // If not found, try to find just the color without a specific size
-      if (foundIndex === -1) {
-        const colorTarget = `_${color}.jpeg`;
-        foundIndex = imagesList.findIndex(img => img.endsWith(colorTarget) && !img.includes('19') && !img.includes('25') && !img.includes('35') && !img.includes('41') && !img.includes('53.5'));
-      }
-
-      // If still not found, try any image with that color
-      if (foundIndex === -1) {
-        const colorTarget = `_${color}.jpeg`;
-        foundIndex = imagesList.findIndex(img => img.endsWith(colorTarget));
-      }
+      const colorTarget = `_${color}.jpeg`;
+      const foundIndex = imagesList.findIndex(img => img.endsWith(colorTarget) || img.includes(`_${color}`));
 
       if (foundIndex !== -1) {
         goToImage(foundIndex);
