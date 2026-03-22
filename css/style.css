@@ -38,6 +38,7 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 100px;
+  overflow-x: hidden;
 }
 
 body {
@@ -370,6 +371,7 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
 /* Skills Ticker */
 .skills-ticker-wrapper {
   width: 100vw;
+  max-width: 100%;
   margin-left: calc(-50vw + 50%);
   border-top: 1px solid var(--border-light);
   border-bottom: 1px solid var(--border-light);
