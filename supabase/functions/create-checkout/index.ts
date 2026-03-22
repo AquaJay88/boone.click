@@ -29,38 +29,50 @@ serve(async (req) => {
     }
 
     // Parse the request body
-    const { priceId, color } = await req.json()
+    const { items, cancelUrl, successUrl } = await req.json()
 
     // Validate inputs
-    if (!priceId) {
-      return new Response(JSON.stringify({ error: 'Missing priceId' }), {
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return new Response(JSON.stringify({ error: 'Missing or invalid items array' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
+    // Format line items for Stripe
+    const line_items = items.map((item: any) => ({
+      price: item.id,
+      quantity: item.quantity,
+    }));
+
+    // Create a detailed description of the order for metadata
+    const orderDetails = items.map((item: any) => {
+      const color = item.color ? item.color.charAt(0).toUpperCase() + item.color.slice(1) : '';
+      return `${item.quantity}x ${item.size} ${color}`.trim();
+    }).join(', ');
+
+    // Truncate to 500 chars (Stripe limit for metadata string)
+    const safeOrderDetails = orderDetails.length > 500
+      ? orderDetails.substring(0, 497) + '...'
+      : orderDetails;
+
     // Set up the Checkout Session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
+      line_items: line_items,
       mode: 'payment',
-      // Metadata allows us to attach the selected color to the order in Stripe
+      // Metadata allows us to attach the selected colors/sizes to the order in Stripe
       payment_intent_data: {
         metadata: {
-          color: color || 'Default',
+          orderDetails: safeOrderDetails,
         },
       },
       metadata: {
-        color: color || 'Default',
+        orderDetails: safeOrderDetails,
       },
       // Redirect URLs back to your website
-      success_url: `https://boone.click/store/success.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `https://boone.click/store/card_holder/index.html`,
+      success_url: successUrl || `https://boone.click/store/success.html?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: cancelUrl || `https://boone.click/store/index.html`,
     })
 
     // Return the generated session URL

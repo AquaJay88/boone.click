@@ -6,10 +6,14 @@ let cart = JSON.parse(localStorage.getItem('boone_cart')) || [];
 const publishableKey = "pk_live_51TDC2lBA6S4OMIQx9F6TnP7bhrlGTSJXDAvcNrTuqdCd5YKY016GAB5yqVHYKHlDyxe8EA5XvrkK7Tcm2dIsjVvU00s04IK7B3";
 
 // Initialize Stripe (requires Stripe.js to be loaded on the page)
-let stripe;
-if (typeof Stripe !== 'undefined') {
-  stripe = Stripe(publishableKey);
-}
+// No longer using direct client-side Stripe initialization since we're using Supabase
+// let stripe;
+// if (typeof Stripe !== 'undefined') {
+//   stripe = Stripe(publishableKey);
+// }
+
+// Supabase Edge Function URL
+const SUPABASE_CHECKOUT_URL = 'https://alfszmccbxndsrronyfe.supabase.co/functions/v1/create-checkout';
 
 // Function to add item to cart
 function addToCart(priceId, size, color) {
@@ -136,7 +140,7 @@ window.updateCartUI = updateCartUI;
 window.saveCart = saveCart;
 
 // Handle Stripe Checkout
-function handleCheckout() {
+async function handleCheckout() {
   if (cart.length === 0) return;
 
   const checkoutBtn = document.getElementById('checkoutBtn');
@@ -144,40 +148,38 @@ function handleCheckout() {
   checkoutBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
   checkoutBtn.disabled = true;
 
-  // Format line items for Stripe.js
-  const lineItems = cart.map(item => {
-    return {
-      price: item.id,
-      quantity: item.quantity
-    };
-  });
+  try {
+    // Call Supabase Edge Function
+    const response = await fetch(SUPABASE_CHECKOUT_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        items: cart,
+        successUrl: window.location.origin + '/store/success.html?session_id={CHECKOUT_SESSION_ID}',
+        cancelUrl: window.location.href, // Go back to the page they were on
+      }),
+    });
 
-  // Ensure Stripe is loaded
-  if (!stripe) {
-    if (typeof Stripe !== 'undefined') {
-      stripe = Stripe(publishableKey);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to create checkout session');
+    }
+
+    // Redirect to Stripe Checkout URL provided by Supabase
+    if (data.url) {
+      window.location.href = data.url;
     } else {
-      alert("Stripe is not loaded yet. Please wait a moment and try again.");
-      checkoutBtn.innerHTML = originalText;
-      checkoutBtn.disabled = false;
-      return;
+      throw new Error("Invalid response from checkout service.");
     }
+  } catch (error) {
+    console.error("Checkout error:", error);
+    alert(error.message || "Something went wrong during checkout. Please try again.");
+    checkoutBtn.innerHTML = originalText;
+    checkoutBtn.disabled = false;
   }
-
-  // Redirect to Stripe Checkout
-  stripe.redirectToCheckout({
-    lineItems: lineItems,
-    mode: 'payment',
-    // Using current origin for dynamic success/cancel URLs
-    successUrl: window.location.origin + '/store/success.html?session_id={CHECKOUT_SESSION_ID}',
-    cancelUrl: window.location.href, // Go back to the page they were on
-  }).then(function (result) {
-    if (result.error) {
-      alert(result.error.message);
-      checkoutBtn.innerHTML = originalText;
-      checkoutBtn.disabled = false;
-    }
-  });
 }
 
 // Initialize on DOM Load
