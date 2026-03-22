@@ -1,7 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import Stripe from 'https://esm.sh/stripe@11.16.0?target=deno'
 
-const stripe = new Stripe(Deno.env.get('Stripe_Secret_key') as string, {
+const stripe = new Stripe(Deno.env.get('Stripe_Secret_Key') as string, {
   apiVersion: '2022-11-15',
   httpClient: Stripe.createFetchHttpClient(),
 });
