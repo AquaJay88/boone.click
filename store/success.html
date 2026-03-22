@@ -121,6 +121,9 @@
       if (sessionId) {
         sessionIdDisplay.textContent = sessionId;
 
+        // Clear the cart on successful checkout
+        localStorage.removeItem('boone_cart');
+
         // Future Implementation:
         // Here you will call your second Supabase Edge Function to fetch receipt details
         // fetch(`https://alfszmccbxndsrronyfe.supabase.co/functions/v1/get-checkout-session?session_id=${sessionId}`)
