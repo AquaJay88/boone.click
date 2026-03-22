@@ -57,5 +57,16 @@ const PRODUCTS = {
   }
 };
 
+const CATALOG = [
+  {
+    id: 'premium_card_holder',
+    name: 'Premium Card Holder',
+    category: 'Games',
+    image: 'https://boone.click/images/card_holders/ch_35_black.jpeg',
+    url: 'card_holder/index.html',
+    displayPrice: '$15.00'
+  }
+];
+
 // If using ES modules
 // export default PRODUCTS;
