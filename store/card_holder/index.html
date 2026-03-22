@@ -12,6 +12,46 @@
   <script src="../cart.js"></script>
   <style>
     /* Product Page Specific Styles */
+
+    .main-image-container {
+      width: 100%;
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      background-color: #f8f8f8; /* Soft background */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      /* Teal border with 0.5rem width */
+      border: 0.5rem solid #6FBCCB;
+    }
+
+    .main-image-container:hover .nav-arrow {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .nav-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.5);
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #333;
+      transition: opacity 0.2s, visibility 0.2s, background 0.2s;
+      /* Hidden by default */
+      opacity: 0;
+      visibility: hidden;
+    }
+
     .product-page-container {
       display: flex;
       flex-direction: column;
@@ -36,17 +76,7 @@
       top: 100px; /* Keep it below navbar */
     }
 
-    .main-image-container {
-      width: 100%;
-      border-radius: var(--border-radius);
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      background-color: #f8f8f8; /* Soft background */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 400px;
-    }
+
 
     .main-image-container img {
       max-width: 100%;
@@ -79,6 +109,78 @@
       margin-bottom: 0.5rem;
       color: var(--text-color);
     }
+
+    .breadcrumb {
+      font-size: 0.7rem;
+      margin-bottom: 0.6rem;
+    }
+    .breadcrumb span, .breadcrumb a {
+      margin-right: 0.15rem;
+    }
+
+    .product-title {
+      padding-top: 2rem;
+    }
+
+    .carousel-container {
+      margin-top: 1rem;
+      width: 100%;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+    }
+
+    .carousel-track {
+      display: flex;
+      gap: 0.5rem;
+      padding-bottom: 0.5rem; /* for scrollbar */
+    }
+
+    .carousel-item {
+      flex: 0 0 80px;
+      height: 80px;
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.2s, border 0.2s;
+      border: 2px solid transparent;
+    }
+
+    .carousel-item.active, .carousel-item:hover {
+      opacity: 1;
+      border-color: var(--primary-color);
+    }
+
+    .carousel-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+
+
+    .nav-arrow:hover {
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .nav-arrow.left {
+      left: 10px;
+    }
+
+    .nav-arrow.right {
+      right: 10px;
+    }
+
+    /* Make the images column take full left side */
+    @media (min-width: 768px) {
+      .product-images {
+        grid-column: span 7;
+      }
+      .product-details {
+        grid-column: span 5;
+      }
+    }
+
 
     .product-price {
       font-size: 1.75rem;
@@ -196,7 +298,7 @@
     </div>
   </nav>
 
-  <div class="container" style="padding-top: 120px; padding-bottom: 60px;">
+  <div class="container" style="padding-top: 90px; padding-bottom: 60px;">
 
     <div class="breadcrumb">
       <a href="../index.html">Store</a> &gt; <span>Premium Card Holder</span>
@@ -208,14 +310,20 @@
       <!-- Images Side -->
       <div class="product-images col-span-6">
         <div class="main-image-container bento-card" style="position: relative;">
-          <img id="mainProductImage" src="https://boone.click/images/card_holders/ch_35_black.jpeg" alt="Premium Card Holder" onerror="this.src='../../John Boone Suit (no background).png';">
+          <img id="mainProductImage" src="../../images/card_holders/ch_all_2.jpeg" alt="Premium Card Holder">
           <div class="loading-overlay" id="imageLoadingOverlay">
             <i class="fa-solid fa-spinner fa-spin"></i>
           </div>
+          <button class="nav-arrow left" onclick="prevImage()"><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="nav-arrow right" onclick="nextImage()"><i class="fa-solid fa-chevron-right"></i></button>
         </div>
-        <p style="text-align: center; font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem;">
-          *Images reflect approximate size/color combination. Actual product may vary slightly.
-        </p>
+
+        <!-- Carousel -->
+        <div class="carousel-container" id="carouselContainer">
+          <div class="carousel-track" id="carouselTrack">
+            <!-- Dynamically injected images go here -->
+          </div>
+        </div>
       </div>
 
       <!-- Details Side -->
@@ -246,34 +354,34 @@
           <div class="options-grid" id="colorOptions">
             <!-- Colors are mapped to lowercase values for image URL building -->
             <button class="option-btn selected" data-type="color" data-val="black" onclick="selectOption('color', this)">
-              <span class="color-dot" style="background-color: #222;"></span>Black
+              Black
             </button>
             <button class="option-btn" data-type="color" data-val="blue" onclick="selectOption('color', this)">
-              <span class="color-dot" style="background-color: #005bb5;"></span>Blue
+              Blue
             </button>
             <button class="option-btn" data-type="color" data-val="brown" onclick="selectOption('color', this)">
-              <span class="color-dot" style="background-color: #8b4513;"></span>Brown
+              Brown
             </button>
             <button class="option-btn" data-type="color" data-val="green" onclick="selectOption('color', this)">
-              <span class="color-dot" style="background-color: #228b22;"></span>Green
+              Green
             </button>
             <button class="option-btn" data-type="color" data-val="grey" onclick="selectOption('color', this)">
-              <span class="color-dot" style="background-color: #808080;"></span>Grey
+              Grey
             </button>
             <button class="option-btn" data-type="color" data-val="orange" onclick="selectOption('color', this)">
-              <span class="color-dot" style="background-color: #ff8c00;"></span>Orange
+              Orange
             </button>
             <button class="option-btn" data-type="color" data-val="purple" onclick="selectOption('color', this)">
-              <span class="color-dot" style="background-color: #800080;"></span>Purple
+              Purple
             </button>
             <button class="option-btn" data-type="color" data-val="red" onclick="selectOption('color', this)">
-              <span class="color-dot" style="background-color: #cc0000;"></span>Red
+              Red
             </button>
             <button class="option-btn" data-type="color" data-val="white" onclick="selectOption('color', this)">
-              <span class="color-dot" style="background-color: #f8f8f8;"></span>White
+              White
             </button>
             <button class="option-btn" data-type="color" data-val="yellow" onclick="selectOption('color', this)">
-              <span class="color-dot" style="background-color: #ffcc00;"></span>Yellow
+              Yellow
             </button>
           </div>
         </div>
@@ -328,13 +436,38 @@
 
   <!-- Page Scripts -->
   <script>
-    // State management
     let state = {
       sizeVal: '35',
       priceId: 'price_1TDDCZBA6S4OMIQxHyH3GX9u',
       colorVal: 'black',
       displayPrice: '$15.00'
     };
+
+    const imagesList = [
+      "ch_all_2.jpeg",
+      "ch_all.jpeg",
+      "ch_black.jpeg",
+      "ch_blue.jpeg",
+      "ch_brown.jpeg",
+      "ch_green.jpeg",
+      "ch_grey.jpeg",
+      "ch_orange.jpeg",
+      "ch_purple.jpeg",
+      "ch_red.jpeg",
+      "ch_white.jpeg",
+      "ch_yellow.jpeg",
+      "ch_19_black.jpeg",
+      "ch_25_black.jpeg",
+      "ch_35_black.jpeg",
+      "ch_41_black.jpeg",
+      "ch_53.5_black.jpeg",
+      "ch_front.jpeg",
+      "ch_side.jpeg",
+      "ch_top.jpeg",
+      "ch_stack.jpeg"
+    ];
+
+    let currentImageIndex = 0;
 
     // Handle Option Selection
     function selectOption(type, buttonEl) {
@@ -356,51 +489,85 @@
         state.colorVal = buttonEl.getAttribute('data-val');
       }
 
-      // Update Image based on selections
-      updateMainImage();
+      attemptAutoSelectImageByColor();
     }
 
-    // Function to attempt loading an image, with fallback
-    function updateMainImage() {
-      const imgEl = document.getElementById('mainProductImage');
-      const overlay = document.getElementById('imageLoadingOverlay');
 
-      const newSrc = `https://boone.click/images/card_holders/ch_${state.sizeVal}_${state.colorVal}.jpeg`;
+    function attemptAutoSelectImageByColor() {
+      const size = state.sizeVal;
+      const color = state.colorVal.toLowerCase();
 
-      // We only show loading overlay if it's changing
-      if (imgEl.src !== newSrc) {
-        overlay.style.display = 'flex';
-        imgEl.style.opacity = '0.5';
+      // Try to find exact size and color
+      const exactTarget = `_${size}_${color}.jpeg`;
+      let foundIndex = imagesList.findIndex(img => img.endsWith(exactTarget));
 
-        // Preload image in memory
-        const tempImg = new Image();
+      // If not found, try to find just the color without a specific size
+      if (foundIndex === -1) {
+        const colorTarget = `_${color}.jpeg`;
+        foundIndex = imagesList.findIndex(img => img.endsWith(colorTarget) && !img.includes('19') && !img.includes('25') && !img.includes('35') && !img.includes('41') && !img.includes('53.5'));
+      }
 
-        tempImg.onload = function() {
-          imgEl.src = newSrc;
-          imgEl.style.opacity = '1';
-          overlay.style.display = 'none';
-        };
+      // If still not found, try any image with that color
+      if (foundIndex === -1) {
+        const colorTarget = `_${color}.jpeg`;
+        foundIndex = imagesList.findIndex(img => img.endsWith(colorTarget));
+      }
 
-        tempImg.onerror = function() {
-          // Fallback if that exact size/color combination is missing
-          // Fall back to a default known good image, or keeping the placeholder
-          console.warn(`Image not found: ${newSrc}. Falling back.`);
-          // You can refine this fallback logic (e.g. try fetching generic color without size)
-          // For now, it leaves the current image but removes overlay
-          imgEl.style.opacity = '1';
-          overlay.style.display = 'none';
-
-          // Optionally, set to generic transparent image or previous image
-          // imgEl.src = '../../John Boone Suit (no background).png';
-        };
-
-        tempImg.src = newSrc;
+      if (foundIndex !== -1) {
+        goToImage(foundIndex);
       }
     }
 
+
+    function initCarousel() {
+      const track = document.getElementById('carouselTrack');
+      imagesList.forEach((imgSrc, index) => {
+        const div = document.createElement('div');
+        div.className = `carousel-item ${index === 0 ? 'active' : ''}`;
+        div.onclick = () => goToImage(index);
+        const img = document.createElement('img');
+        img.src = `../../images/card_holders/${imgSrc}`;
+        div.appendChild(img);
+        track.appendChild(div);
+      });
+    }
+
+
+    function goToImage(index) {
+      if (index < 0) index = imagesList.length - 1;
+      if (index >= imagesList.length) index = 0;
+      currentImageIndex = index;
+
+      const imgEl = document.getElementById('mainProductImage');
+
+      // Simple fade effect
+      imgEl.style.opacity = 0.5;
+      setTimeout(() => {
+        imgEl.src = `../../images/card_holders/${imagesList[currentImageIndex]}`;
+        imgEl.style.opacity = 1;
+      }, 150);
+
+      const track = document.getElementById('carouselTrack');
+      const items = track.querySelectorAll('.carousel-item');
+      items.forEach(item => item.classList.remove('active'));
+      items[currentImageIndex].classList.add('active');
+
+      // Auto-scroll the active thumbnail into view
+      items[currentImageIndex].scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center'
+      });
+    }
+
+
+    function prevImage() { goToImage(currentImageIndex - 1); }
+    function nextImage() { goToImage(currentImageIndex + 1); }
+
     // Initialize image on load
     window.onload = function() {
-      updateMainImage();
+      initCarousel();
+      goToImage(0);
     };
   </script>
 
