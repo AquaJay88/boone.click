@@ -1,0 +1,38 @@
+name: Deploy PR Previews
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - closed
+
+concurrency: preview-${{ github.ref }}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Since this is a static site without a build step (just HTML/CSS/JS files),
+      # we can simply deploy the current directory.
+      # If you had a build step (like npm run build), it would go here and
+      # source-dir below would point to the build output directory.
+
+      - name: Deploy preview
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: .
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: auto
+          wait-for-pages-deployment: false
+          comment: true
+          qr-code: false
