@@ -39,6 +39,21 @@ const PRODUCTS = {
     size: '53.5mm',
     price: 15.00,
     displayPrice: '$15.00'
+  },
+  // Test Product
+  'price_1TDm1NBA6S4OMIQxtM8EDvxS': {
+    id: 'price_1TDm1NBA6S4OMIQxtM8EDvxS',
+    name: 'Test Product',
+    size: 'Variant A',
+    price: 5.00,
+    displayPrice: '$5.00'
+  },
+  'price_1TDm1NBA6S4OMIQxPzx9uCeT': {
+    id: 'price_1TDm1NBA6S4OMIQxPzx9uCeT',
+    name: 'Test Product',
+    size: 'Variant B',
+    price: 8.00,
+    displayPrice: '$8.00'
   }
 };
 
