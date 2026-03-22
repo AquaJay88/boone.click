@@ -1145,3 +1145,7 @@ footer {
     mask-position: -10vw -10vh, 90vw 30vh, 20vw 90vh;
   }
 }
+
+.craftsman-font {
+  font-family: 'Chalkboard SE', sans-serif;
+}
