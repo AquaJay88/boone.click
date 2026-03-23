@@ -712,6 +712,11 @@ footer {
   font-size: 0.9rem;
   border-top: 1px solid var(--border-light);
   margin-top: 2rem;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 10;
 }
 
 /* Floating Cart Menu */
