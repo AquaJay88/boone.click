@@ -211,7 +211,7 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
   opacity: 0.8;
   mix-blend-mode: multiply; /* Helps colors blend richly if they overlap */
   animation-duration: 30s;
-  animation-timing-function: linear;
+  animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
   animation-direction: normal;
 }
@@ -973,7 +973,7 @@ footer {
   opacity: 0.8;
   mix-blend-mode: multiply;
   animation-duration: 21.67s; /* Scaled down duration */
-  animation-timing-function: linear;
+  animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
 }
 
@@ -1130,7 +1130,7 @@ footer {
   mask-repeat: no-repeat;
 
   /* Animate the mask positions to mimic the blob orbits */
-  animation: mask-orbits 30s linear infinite;
+  animation: mask-orbits 30s ease-in-out infinite;
 }
 
 /* We combine the 3 blob animations into a single mask-position animation */
