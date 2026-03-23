@@ -175,18 +175,24 @@
         .product-mini-details {
           display: flex;
           justify-content: space-between;
-          align-items: center;
+          align-items: flex-end;
           margin-bottom: 1rem;
           flex-grow: 1;
         }
         .product-mini-title {
           font-size: 1.2rem;
+          line-height: 1.2;
           font-weight: 600;
           margin: 0;
           color: var(--text-color);
         }
         .product-mini-price {
           font-size: 1.2rem;
+          text-align: right;
+          line-height: 1.2;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
           font-weight: 600;
           color: var(--primary-color);
         }
