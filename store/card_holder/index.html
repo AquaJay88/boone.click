@@ -234,12 +234,38 @@
 
     .buy-btn-container {
       margin-top: 3rem;
+      padding-bottom: 2rem;
     }
 
     .buy-btn {
       width: 100%;
       font-size: 1.25rem;
       padding: 1.25rem;
+      transition: all 0.2s ease;
+    }
+
+    .buy-btn.visual-disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-5px); }
+    }
+
+    .shake {
+      animation: shake 0.3s ease-in-out;
+    }
+
+    .validation-error {
+      color: #A81313;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      display: none;
+      text-align: center;
     }
 
     #checkoutError {
@@ -318,7 +344,7 @@
       <!-- Details Side -->
       <div class="product-details col-span-6 bento-card">
         <h1 class="product-title">Premium Card Holder</h1>
-        <div class="product-price" id="priceDisplay">$12.00</div>
+        <div class="product-price" id="priceDisplay">From $9.50</div>
 
         <p class="product-description">
           Designed for simplicity and built to last. This minimalist card holder keeps your essentials secure without the bulk. Whether you need a compact carrier for a night out or a streamlined daily driver, select the size that fits your needs and the color that fits your style.
@@ -331,7 +357,7 @@
             <!-- Data attributes store the Stripe Price ID and standard price for display -->
             <button class="option-btn" data-type="size" data-id="price_1TDD4KBA6S4OMIQxlwcdg1TE" data-val="19" data-price="$9.50" onclick="selectOption('size', this)">19mm</button>
             <button class="option-btn" data-type="size" data-id="price_1TDDBgBA6S4OMIQxBELX2uYT" data-val="25" data-price="$10.50" onclick="selectOption('size', this)">25mm</button>
-            <button class="option-btn selected" data-type="size" data-id="price_1TDDCZBA6S4OMIQxHyH3GX9u" data-val="35" data-price="$12.00" onclick="selectOption('size', this)">35mm</button>
+            <button class="option-btn" data-type="size" data-id="price_1TDDCZBA6S4OMIQxHyH3GX9u" data-val="35" data-price="$12.00" onclick="selectOption('size', this)">35mm</button>
             <button class="option-btn" data-type="size" data-id="price_1TDDD7BA6S4OMIQxJX8gUESg" data-val="41" data-price="$14.25" onclick="selectOption('size', this)">41mm</button>
             <button class="option-btn" data-type="size" data-id="price_1TDDDdBA6S4OMIQxE23U85qe" data-val="53.5" data-price="$17.00" onclick="selectOption('size', this)">53.5mm</button>
           </div>
@@ -342,7 +368,7 @@
           <label class="selection-label">Color</label>
           <div class="options-grid" id="colorOptions">
             <!-- Colors are mapped to lowercase values for image URL building -->
-            <button class="option-btn selected" data-type="color" data-val="black" onclick="selectOption('color', this)">
+            <button class="option-btn" data-type="color" data-val="black" onclick="selectOption('color', this)">
               Black
             </button>
             <button class="option-btn" data-type="color" data-val="blue" onclick="selectOption('color', this)">
@@ -377,9 +403,10 @@
 
         <!-- Checkout Action -->
         <div class="buy-btn-container">
-          <button class="btn buy-btn add-to-cart-btn" onclick="window.addToCart(state.priceId, state.sizeVal + 'mm', state.colorVal)">
+          <button id="addToCartBtn" class="btn buy-btn add-to-cart-btn visual-disabled" onclick="handleAddToCart()">
             Add to Cart
           </button>
+          <div id="validationError" class="validation-error">Please select a size and color.</div>
         </div>
 
       </div>
@@ -426,10 +453,10 @@
   <!-- Page Scripts -->
   <script>
     let state = {
-      sizeVal: '35',
-      priceId: 'price_1TDDCZBA6S4OMIQxHyH3GX9u',
-      colorVal: 'black',
-      displayPrice: '$12.00'
+      sizeVal: null,
+      priceId: null,
+      colorVal: null,
+      displayPrice: null
     };
 
     const imagesList = [
@@ -465,7 +492,35 @@
         state.colorVal = buttonEl.getAttribute('data-val');
       }
 
-      attemptAutoSelectImageByColor();
+      if (type === 'color') {
+        attemptAutoSelectImageByColor();
+      }
+
+      checkSelectionState();
+    }
+
+    function checkSelectionState() {
+      const btn = document.getElementById('addToCartBtn');
+      const errorMsg = document.getElementById('validationError');
+      if (state.sizeVal && state.colorVal) {
+        btn.classList.remove('visual-disabled');
+        errorMsg.style.display = 'none';
+      }
+    }
+
+    function handleAddToCart() {
+      const btn = document.getElementById('addToCartBtn');
+      const errorMsg = document.getElementById('validationError');
+
+      if (!state.sizeVal || !state.colorVal) {
+        btn.classList.remove('shake');
+        void btn.offsetWidth; // Trigger reflow
+        btn.classList.add('shake');
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      window.addToCart(state.priceId, state.sizeVal + 'mm', state.colorVal);
     }
 
 
@@ -528,7 +583,8 @@
     // Initialize image on load
     window.onload = function() {
       initCarousel();
-      goToImage(0);
+      // ch_all_2.webp is at index 5 in imagesList
+      goToImage(5);
     };
   </script>
 
