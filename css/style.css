@@ -298,6 +298,7 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
   position: relative;
   margin-bottom: 0;
   padding-bottom: 0;
+  overflow: hidden;
 }
 
 .hero {
