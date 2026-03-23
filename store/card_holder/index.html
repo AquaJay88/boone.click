@@ -296,7 +296,7 @@
       <!-- Images Side -->
       <div class="product-images col-span-6">
         <div class="main-image-container bento-card" style="position: relative;">
-          <img id="mainProductImage" src="../../images/card_holders/ch_all_2.jpeg" alt="Premium Card Holder">
+          <img id="mainProductImage" src="../../images/card_holders/ch_all_2.webp" alt="Premium Card Holder">
           <div class="loading-overlay" id="imageLoadingOverlay">
             <i class="fa-solid fa-spinner fa-spin"></i>
           </div>
@@ -430,16 +430,14 @@
     };
 
     const imagesList = [
-      "ch_19_blue.jpeg",
-      "ch_35_black.jpeg",
-      "ch_35_red.jpeg",
-      "ch_41_grey.jpeg",
-      "ch_53.5_green.jpeg",
-      "ch_all_1.jpeg",
-      "ch_all_2.jpeg",
-      "ch_multiple_1.jpeg",
-      "ch_multiple_2.jpeg",
-      "ch_multiple_open.jpeg"
+      "ch_19_blue.webp",
+      "ch_35_black.webp",
+      "ch_35_red.webp",
+      "ch_41_grey.webp",
+      "ch_53.5_green.webp",
+      "ch_all_2.webp",
+      "ch_multiple.webp",
+      "ch_multiple_open.webp"
     ];
 
     let currentImageIndex = 0;
@@ -470,7 +468,7 @@
 
     function attemptAutoSelectImageByColor() {
       const color = state.colorVal.toLowerCase();
-      const colorTarget = `_${color}.jpeg`;
+      const colorTarget = `_${color}.webp`;
       const foundIndex = imagesList.findIndex(img => img.endsWith(colorTarget) || img.includes(`_${color}`));
 
       if (foundIndex !== -1) {

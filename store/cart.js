@@ -101,7 +101,7 @@ function updateCartUI() {
         itemEl.className = 'cart-item';
 
         // Generate thumbnail URL
-        const thumbUrl = `https://boone.click/images/card_holders/ch_${item.size.replace('mm', '')}_${item.color}.jpeg`;
+        const thumbUrl = `https://boone.click/images/card_holders/ch_${item.size.replace('mm', '')}_${item.color}.webp`;
 
         itemEl.innerHTML = `
           <img src="${thumbUrl}" alt="${item.name}" onerror="this.src='../John Boone Suit (no background).png';" class="cart-item-img">
