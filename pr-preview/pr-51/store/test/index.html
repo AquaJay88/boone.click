@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Product | Boone Store</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <!-- Include a lightweight icon set -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="../products.js"></script>
+  <script src="../cart.js"></script>
+  <style>
+    /* Product Page Specific Styles */
+    .product-page-container {
+      display: flex;
+      flex-direction: column;
+      gap: 3rem;
+      padding: 2rem 0;
+    }
+
+    @media (min-width: 992px) {
+      .product-page-container {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+    }
+
+    /* Left side: Images */
+    .product-images {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: sticky;
+      top: 100px; /* Keep it below navbar */
+    }
+
+    .main-image-container {
+      width: 100%;
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      background-color: #f8f8f8; /* Soft background */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+    }
+
+    .main-image-container img {
+      max-width: 100%;
+      max-height: 600px;
+      object-fit: contain;
+      display: block;
+      transition: opacity 0.3s ease;
+    }
+
+    .loading-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      color: var(--primary-color);
+      display: none;
+    }
+
+    /* Right side: Details */
+    .product-details {
+      flex: 1;
+      padding: 0 1rem;
+    }
+
+    .product-title {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-color);
+    }
+
+    .product-price {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: var(--primary-color);
+      margin-bottom: 1.5rem;
+    }
+
+    .product-description {
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+    }
+
+    .selection-group {
+      margin-bottom: 2rem;
+    }
+
+    .selection-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: var(--text-color);
+    }
+
+    /* Selection Buttons grid */
+    .options-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .option-btn {
+      padding: 0.75rem 1.25rem;
+      border: 2px solid #ddd;
+      border-radius: var(--border-radius);
+      background: transparent;
+      color: var(--text-color);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      font-size: 1rem;
+    }
+
+    .option-btn:hover {
+      border-color: var(--primary-color);
+    }
+
+    .option-btn.selected {
+      border-color: var(--primary-color);
+      background-color: var(--primary-color);
+      color: white;
+      box-shadow: 0 4px 12px var(--shadow-color);
+    }
+
+    /* Color dots inside buttons */
+    .color-dot {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+      border: 1px solid rgba(0,0,0,0.2);
+    }
+
+    .buy-btn-container {
+      margin-top: 3rem;
+    }
+
+    .buy-btn {
+      width: 100%;
+      font-size: 1.25rem;
+      padding: 1.25rem;
+    }
+
+    #checkoutError {
+      color: red;
+      margin-top: 1rem;
+      text-align: center;
+      display: none;
+      padding: 1rem;
+      background: #ffeeee;
+      border-radius: var(--border-radius);
+    }
+
+    .breadcrumb {
+      margin-bottom: 2rem;
+      color: var(--text-muted);
+    }
+    .breadcrumb a {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container" style="justify-content: center; position: relative;">
+      <!-- Centered Logo -->
+      <div class="nav-logo" style="position: absolute; left: 50%; transform: translateX(-50%);">
+        <a href="../index.html" style="color: inherit; text-decoration: none; font-size: 1.5rem;">
+          <img src="../../images/JB Red.png" alt="JB Logo" style="height: 1.5em; margin-right: 0.5em; vertical-align: middle;"><span class="craftsman-font" style="vertical-align: middle;">Craftsman</span>
+        </a>
+      </div>
+      <!-- Right-aligned links -->
+      <div class="nav-links" style="margin-left: auto;">
+        <a href="../about.html" class="nav-link">About Us</a>
+        <a href="../contact.html" class="nav-link">Contact Us</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container" style="padding-top: 120px; padding-bottom: 60px;">
+
+    <div class="breadcrumb">
+      <a href="../index.html">Store</a> &gt; <span>Test Product</span>
+    </div>
+
+    <!-- Product Layout -->
+    <div class="product-page-container bento-grid" style="margin:0;">
+
+      <!-- Images Side -->
+      <div class="product-images col-span-6">
+        <div class="main-image-container bento-card" style="position: relative;">
+          <!-- Using placeholder image for the test product -->
+          <img id="mainProductImage" src="../../John Boone Suit (no background).png" alt="Test Product">
+          <div class="loading-overlay" id="imageLoadingOverlay">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+          </div>
+        </div>
+        <p style="text-align: center; font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem;">
+          *Test product visual placeholder.
+        </p>
+      </div>
+
+      <!-- Details Side -->
+      <div class="product-details col-span-6 bento-card">
+        <h1 class="product-title">Test Product</h1>
+        <div class="product-price" id="priceDisplay">$5.00</div>
+
+        <p class="product-description">
+          This is a test product designed for testing Stripe checkout integration.
+        </p>
+
+        <!-- Size Selection -->
+        <div class="selection-group">
+          <label class="selection-label">Variant</label>
+          <div class="options-grid" id="sizeOptions">
+            <button class="option-btn selected" data-type="size" data-id="price_1TDm1NBA6S4OMIQxtM8EDvxS" data-val="Variant A" data-price="$5.00" onclick="selectOption('size', this)">Variant A</button>
+            <button class="option-btn" data-type="size" data-id="price_1TDm1NBA6S4OMIQxPzx9uCeT" data-val="Variant B" data-price="$8.00" onclick="selectOption('size', this)">Variant B</button>
+          </div>
+        </div>
+
+        <!-- Color Selection -->
+        <div class="selection-group">
+          <label class="selection-label">Color</label>
+          <div class="options-grid" id="colorOptions">
+            <button class="option-btn selected" data-type="color" data-val="black" onclick="selectOption('color', this)">
+              <span class="color-dot" style="background-color: #222;"></span>Black
+            </button>
+            <button class="option-btn" data-type="color" data-val="grey" onclick="selectOption('color', this)">
+              <span class="color-dot" style="background-color: #808080;"></span>Grey
+            </button>
+            <button class="option-btn" data-type="color" data-val="blue" onclick="selectOption('color', this)">
+              <span class="color-dot" style="background-color: #005bb5;"></span>Blue
+            </button>
+            <button class="option-btn" data-type="color" data-val="green" onclick="selectOption('color', this)">
+              <span class="color-dot" style="background-color: #228b22;"></span>Green
+            </button>
+          </div>
+        </div>
+
+        <!-- Checkout Action -->
+        <div class="buy-btn-container">
+          <!-- Remove 'mm' since these are generic variants -->
+          <button class="btn buy-btn add-to-cart-btn" onclick="window.addToCart(state.priceId, state.sizeVal, state.colorVal)">
+            Add to Cart
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <footer style="text-align: center; padding: 2rem;">
+    <a href="../about.html" class="btn btn-secondary" style="display: inline-block;">Learn about my small business</a>
+  </footer>
+
+  <!-- Floating Cart Menu -->
+  <div class="floating-cart" id="floatingCartMenu">
+    <!-- Localized Animation Background -->
+    <div class="cart-background">
+      <div class="cart-blob cart-blob-1"></div>
+      <div class="cart-blob cart-blob-2"></div>
+      <div class="cart-blob cart-blob-3"></div>
+      <div class="cart-texture"></div>
+    </div>
+
+    <!-- Menu Controls & Content -->
+    <div class="cart-content-wrapper">
+      <button class="cart-toggle-btn" id="cartToggleBtn" aria-label="Toggle Cart">
+        <i class="fa-solid fa-cart-shopping open-icon"></i>
+        <i class="fa-solid fa-xmark close-icon"></i>
+        <span class="cart-badge" id="cartBadge">0</span>
+      </button>
+
+      <div class="cart-dropdown-inner" id="cartDropdownInner">
+        <h3 class="cart-title">Your Cart</h3>
+        <div class="cart-items" id="cartItems">
+          <!-- Items will be injected here by cart.js -->
+        </div>
+        <div class="cart-footer">
+          <div class="cart-total" id="cartTotal">Total: $0.00</div>
+          <button class="btn btn-checkout" id="checkoutBtn">Checkout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page Scripts -->
+  <script>
+    // State management
+    let state = {
+      sizeVal: 'Variant A',
+      priceId: 'price_1TDm1NBA6S4OMIQxtM8EDvxS',
+      colorVal: 'black',
+      displayPrice: '$5.00'
+    };
+
+    // Handle Option Selection
+    function selectOption(type, buttonEl) {
+      // Remove selected class from all siblings
+      const container = document.getElementById(`${type}Options`);
+      const buttons = container.querySelectorAll('.option-btn');
+      buttons.forEach(btn => btn.classList.remove('selected'));
+
+      // Add selected class to clicked button
+      buttonEl.classList.add('selected');
+
+      // Update state
+      if (type === 'size') {
+        state.sizeVal = buttonEl.getAttribute('data-val');
+        state.priceId = buttonEl.getAttribute('data-id');
+        state.displayPrice = buttonEl.getAttribute('data-price');
+        document.getElementById('priceDisplay').textContent = state.displayPrice;
+      } else if (type === 'color') {
+        state.colorVal = buttonEl.getAttribute('data-val');
+      }
+
+      // Update Image based on selections (Optional for test product, we just use the placeholder)
+      // updateMainImage();
+    }
+  </script>
+
+</body>
+</html>
