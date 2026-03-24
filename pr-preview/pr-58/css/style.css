@@ -187,6 +187,8 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
 .main-content-wrapper {
   position: relative;
   overflow: hidden;
+  padding-bottom: 250px; /* Expand down behind footer */
+  margin-bottom: -250px; /* Pull footer up to overlap */
 }
 
 /* Main Container */
