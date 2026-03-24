@@ -1181,8 +1181,8 @@ footer {
 }
 
 .floating-menu.active {
-  width: 250px;
-  height: 350px;
+  width: 200px;
+  height: 250px;
   border-radius: var(--radius-lg);
 }
 
@@ -1237,11 +1237,11 @@ footer {
   visibility: hidden;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   height: calc(100% - 60px);
-  padding: 1.5rem;
+  padding: 1rem;
   padding-bottom: 0;
   transform: translateY(20px);
   transition: opacity 0.3s ease 0.1s, transform 0.3s ease 0.1s, visibility 0.3s;
