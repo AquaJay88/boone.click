@@ -183,6 +183,12 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
   color: var(--primary-color);
 }
 
+/* Main Content Wrapper (Clips blobs at footer) */
+.main-content-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
 /* Main Container */
 .container {
   max-width: var(--max-width);
@@ -298,7 +304,6 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
   position: relative;
   margin-bottom: 0;
   padding-bottom: 0;
-  overflow: hidden;
 }
 
 .hero {
