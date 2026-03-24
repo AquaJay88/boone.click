@@ -187,8 +187,6 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
 .main-content-wrapper {
   position: relative;
   overflow: hidden;
-  padding-bottom: 250px; /* Expand down behind footer */
-  margin-bottom: -250px; /* Pull footer up to overlap */
 }
 
 /* Main Container */
@@ -720,9 +718,7 @@ footer {
   font-size: 0.9rem;
   border-top: 1px solid var(--border-light);
   margin-top: 2rem;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: var(--bg-color); /* Solid background to obscure blobs beneath */
   position: relative;
   z-index: 10;
 }
