@@ -68,9 +68,7 @@
       flex-direction: column;
       justify-content: space-between;
       height: 100%;
-      position: sticky;
-      top: 120px;
-      z-index: 10; /* Keep it below navbar and sticky */
+      z-index: 10; /* Keep it below navbar */
       /* align-self defaults to stretch from container */
     }
 
@@ -105,9 +103,10 @@
     }
 
     .product-title {
-      font-size: 2.5rem;
+      font-size: 1.5rem; /* Matches "Craftsman" from navbar */
       margin-bottom: 0.5rem;
       color: var(--text-color);
+      padding-top: 2rem;
     }
 
     .breadcrumb {
@@ -116,10 +115,6 @@
     }
     .breadcrumb span, .breadcrumb a {
       margin-right: 0.15rem;
-    }
-
-    .product-title {
-      padding-top: 2rem;
     }
 
     .carousel-container {
@@ -173,10 +168,10 @@
 
 
     .product-price {
-      font-size: 1.75rem;
+      font-size: 0.95rem; /* Matches navbar links */
       font-weight: 600;
       color: var(--primary-color);
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
     }
 
     .product-description {
@@ -187,13 +182,13 @@
     }
 
     .selection-group {
-      margin-bottom: 2rem;
+      margin-bottom: 1rem; /* Match spacing between dropdowns and price */
     }
 
     .selection-label {
       display: block;
       font-weight: 600;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.5rem;
       color: var(--text-color);
     }
 
@@ -212,7 +207,7 @@
       background-color: transparent;
       border: 2px solid #ddd;
       border-radius: var(--border-radius);
-      padding: 0.75rem 1.25rem;
+      padding: 0.5rem 1rem; /* Slightly decreased padding */
       cursor: pointer;
       font-weight: 500;
       color: var(--text-color);
@@ -221,7 +216,7 @@
       align-items: center;
       transition: all 0.2s ease;
       font-family: inherit;
-      font-size: 1rem;
+      font-size: 0.95rem; /* Match new size */
     }
 
     .select-selected:hover {
@@ -270,7 +265,8 @@
     }
 
     .select-items div {
-      padding: 0.75rem 1.25rem;
+      padding: 0.5rem 1rem; /* Same as select-selected */
+      font-size: 0.95rem;
       cursor: pointer;
       border-bottom: 1px solid #eee;
       color: var(--text-color);
@@ -303,8 +299,8 @@
 
     .buy-btn-container {
       margin-top: auto;
-      padding-top: 3rem;
-      padding-bottom: 2rem;
+      padding-top: 0; /* Let flex automatically handle the variable space above */
+      padding-bottom: 2rem; /* Keep existing bottom spacing */
     }
 
     .buy-btn {
