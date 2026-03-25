@@ -59,19 +59,20 @@
     .product-page-container {
       gap: 3rem;
       padding: 2rem 0;
+      align-items: stretch; /* Make left and right sides equal height */
     }
 
     /* Left side: Images */
     .product-images {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      justify-content: space-between;
+      height: 100%;
       position: sticky;
-      top: 120px; height: max-content; z-index: 10; /* Keep it below navbar and sticky */
-      align-self: start;
+      top: 120px;
+      z-index: 10; /* Keep it below navbar and sticky */
+      /* align-self defaults to stretch from container */
     }
-
-
 
     .main-image-container img {
       max-width: 100%;
@@ -98,6 +99,9 @@
     .product-details {
       flex: 1;
       padding: 0 1rem;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
     }
 
     .product-title {
@@ -195,32 +199,96 @@
 
     /* Selection Buttons grid */
     .options-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
+      position: relative;
     }
 
-    .option-btn {
-      padding: 0.75rem 1.25rem;
+    /* Custom Dropdown Styling */
+    .custom-select {
+      position: relative;
+      width: 100%;
+    }
+
+    .select-selected {
+      background-color: transparent;
       border: 2px solid #ddd;
       border-radius: var(--border-radius);
-      background: transparent;
-      color: var(--text-color);
+      padding: 0.75rem 1.25rem;
       cursor: pointer;
+      font-weight: 500;
+      color: var(--text-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       transition: all 0.2s ease;
       font-family: inherit;
       font-size: 1rem;
     }
 
-    .option-btn:hover {
+    .select-selected:hover {
       border-color: var(--primary-color);
     }
 
-    .option-btn.selected {
-      border-color: var(--primary-color);
-      background-color: var(--primary-color);
-      color: white;
-      box-shadow: 0 4px 12px var(--shadow-color);
+    .select-selected:after {
+      content: '\f078'; /* FontAwesome chevron-down */
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      transition: transform 0.2s;
+    }
+
+    .select-selected.select-arrow-active:after {
+      transform: rotate(180deg);
+    }
+
+    .select-items {
+      position: absolute;
+      background-color: var(--card-bg, #fff);
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 99;
+      margin-top: 0.5rem;
+      border: 1px solid var(--border-light, #eee);
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 12px var(--shadow-color, rgba(0,0,0,0.1));
+      max-height: 250px;
+      overflow-y: auto;
+      display: none;
+    }
+
+    .select-items.select-hide {
+      display: none;
+    }
+
+    .select-items.show {
+      display: block;
+      animation: fadeInDown 0.2s ease forwards;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .select-items div {
+      padding: 0.75rem 1.25rem;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+      color: var(--text-color);
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    .select-items div:last-child {
+      border-bottom: none;
+    }
+
+    .select-items div:hover, .same-as-selected {
+      background-color: rgba(0,0,0,0.05);
+      color: var(--primary-color);
+    }
+
+    /* Keep hidden in case of js references */
+    .option-btn {
+      display: none;
     }
 
     /* Color dots inside buttons */
@@ -234,7 +302,8 @@
     }
 
     .buy-btn-container {
-      margin-top: 3rem;
+      margin-top: auto;
+      padding-top: 3rem;
       padding-bottom: 2rem;
     }
 
@@ -494,18 +563,44 @@
         document.getElementById('sizeGroup').style.display = 'block';
         const sizeContainer = document.getElementById('sizeOptions');
         sizeContainer.innerHTML = '';
+
+        // Custom Dropdown Wrapper
+        const customSelect = document.createElement('div');
+        customSelect.className = 'custom-select';
+
+        const selectSelected = document.createElement('div');
+        selectSelected.className = 'select-selected';
+        selectSelected.textContent = 'Select Size...';
+
+        const selectItems = document.createElement('div');
+        selectItems.className = 'select-items select-hide';
+
         sizes.forEach(s => {
           const sizeText = s.size_label || 'Standard';
-          const btn = document.createElement('button');
-          btn.className = 'option-btn';
-          btn.setAttribute('data-type', 'size');
-          btn.setAttribute('data-id', s.stripe_price_id);
-          btn.setAttribute('data-val', sizeText);
-          btn.setAttribute('data-price', s.price_display);
-          btn.textContent = sizeText;
-          btn.onclick = () => selectOption('size', btn);
-          sizeContainer.appendChild(btn);
+          const item = document.createElement('div');
+          item.setAttribute('data-type', 'size');
+          item.setAttribute('data-id', s.stripe_price_id);
+          item.setAttribute('data-val', sizeText);
+          item.setAttribute('data-price', s.price_display);
+          item.textContent = sizeText;
+          item.onclick = (e) => {
+            selectOption('size', item, selectSelected);
+            selectSelected.click(); // Close dropdown
+          };
+          selectItems.appendChild(item);
         });
+
+        selectSelected.onclick = function(e) {
+          e.stopPropagation();
+          closeAllSelect(this);
+          this.nextSibling.classList.toggle('select-hide');
+          this.nextSibling.classList.toggle('show');
+          this.classList.toggle('select-arrow-active');
+        };
+
+        customSelect.appendChild(selectSelected);
+        customSelect.appendChild(selectItems);
+        sizeContainer.appendChild(customSelect);
       }
 
       // Render Variations
@@ -527,15 +622,41 @@
 
         const variationContainer = document.getElementById('colorOptions');
         variationContainer.innerHTML = '';
+
+        // Custom Dropdown Wrapper
+        const customSelect = document.createElement('div');
+        customSelect.className = 'custom-select';
+
+        const selectSelected = document.createElement('div');
+        selectSelected.className = 'select-selected';
+        selectSelected.textContent = `Select ${variationLabel.textContent}...`;
+
+        const selectItems = document.createElement('div');
+        selectItems.className = 'select-items select-hide';
+
         variations.forEach(v => {
-          const btn = document.createElement('button');
-          btn.className = 'option-btn';
-          btn.setAttribute('data-type', 'variation');
-          btn.setAttribute('data-val', v);
-          btn.textContent = v;
-          btn.onclick = () => selectOption('variation', btn);
-          variationContainer.appendChild(btn);
+          const item = document.createElement('div');
+          item.setAttribute('data-type', 'variation');
+          item.setAttribute('data-val', v);
+          item.textContent = v;
+          item.onclick = (e) => {
+            selectOption('variation', item, selectSelected);
+            selectSelected.click(); // Close dropdown
+          };
+          selectItems.appendChild(item);
         });
+
+        selectSelected.onclick = function(e) {
+          e.stopPropagation();
+          closeAllSelect(this);
+          this.nextSibling.classList.toggle('select-hide');
+          this.nextSibling.classList.toggle('show');
+          this.classList.toggle('select-arrow-active');
+        };
+
+        customSelect.appendChild(selectSelected);
+        customSelect.appendChild(selectItems);
+        variationContainer.appendChild(customSelect);
       } else {
          // If no variations but there are sizes, auto-select state logic expects variation to not block checkout
          state.variationVal = 'default';
@@ -557,16 +678,37 @@
     }
 
 
-    function selectOption(type, buttonEl) {
-      // Remove selected class from all siblings
-      const container = document.getElementById(`${type === 'variation' ? 'color' : type}Options`);
-      if(container) {
-          const buttons = container.querySelectorAll('.option-btn');
-          buttons.forEach(btn => btn.classList.remove('selected'));
+    function closeAllSelect(elmnt) {
+      const x = document.getElementsByClassName("select-items");
+      const y = document.getElementsByClassName("select-selected");
+      const arrNo = [];
+      for (let i = 0; i < y.length; i++) {
+        if (elmnt == y[i]) {
+          arrNo.push(i)
+        } else {
+          y[i].classList.remove("select-arrow-active");
+        }
+      }
+      for (let i = 0; i < x.length; i++) {
+        if (arrNo.indexOf(i)) {
+          x[i].classList.add("select-hide");
+          x[i].classList.remove("show");
+        }
+      }
+    }
+
+    document.addEventListener("click", closeAllSelect);
+
+    function selectOption(type, buttonEl, selectSelectedEl) {
+      // Remove same-as-selected class from all siblings
+      const siblings = buttonEl.parentNode.children;
+      for (let i = 0; i < siblings.length; i++) {
+        siblings[i].classList.remove("same-as-selected");
       }
 
-      // Add selected class to clicked button
-      buttonEl.classList.add('selected');
+      // Add selected class to clicked item
+      buttonEl.classList.add('same-as-selected');
+      selectSelectedEl.textContent = buttonEl.textContent;
 
       // Update state
       if (type === 'size') {
