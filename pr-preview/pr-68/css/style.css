@@ -740,7 +740,7 @@ footer {
   transition: width 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55),
               height 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55),
               border-radius 0.4s ease;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
 }
@@ -799,19 +799,19 @@ footer {
 
 .cart-badge {
   position: absolute;
-  top: 6px;
-  right: 6px;
+  top: -5px;
+  right: -5px;
   background-color: var(--primary-color);
   color: white;
   font-size: 0.75rem;
   font-weight: bold;
-  height: 20px;
-  min-width: 20px;
-  border-radius: 10px;
+  height: 24px;
+  min-width: 24px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 5px;
+  padding: 0 6px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   transition: transform 0.2s ease;
 }
@@ -968,6 +968,7 @@ footer {
   z-index: 1;
   overflow: hidden;
   pointer-events: none;
+  border-radius: inherit;
 }
 
 .cart-blob {
