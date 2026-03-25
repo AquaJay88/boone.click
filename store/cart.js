@@ -57,11 +57,7 @@ function addToCart(priceId, name, size, variation, displayPrice, imageUrl) {
   saveCart();
   updateCartUI();
 
-  // Open the cart when item is added
-  const cartMenu = document.getElementById('floatingCartMenu');
-  if (cartMenu && !cartMenu.classList.contains('active')) {
-    cartMenu.classList.add('active');
-  }
+
 }
 
 // Function to remove item from cart
