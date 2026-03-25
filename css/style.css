@@ -825,7 +825,7 @@ footer {
   visibility: hidden;
   display: flex;
   flex-direction: column;
-  height: calc(100% - 60px); /* Leave room for the button area */
+  height: 100%;
   padding: 1.5rem;
   padding-bottom: 0;
   transform: translateY(20px);
@@ -844,6 +844,9 @@ footer {
   margin-bottom: 1rem;
   border-bottom: 1px solid var(--border-light);
   padding-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .cart-items {
@@ -852,7 +855,7 @@ footer {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 60px; /* leave space for fixed bottom footer */
 }
 
 /* Scrollbar styling for cart items */
@@ -869,8 +872,8 @@ footer {
 
 .cart-item {
   display: flex;
+  flex-direction: column;
   gap: 0.75rem;
-  align-items: center;
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--border-light);
 }
@@ -880,10 +883,32 @@ footer {
   padding-bottom: 0;
 }
 
+.cart-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.cart-item-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  flex: 1;
+  padding-right: 0.5rem;
+}
+
+.cart-item-content {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
 .cart-item-img {
-  width: 50px;
-  height: 50px;
-  object-fit: contain;
+  width: 80px;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
   border-radius: var(--radius-md);
   background: #f8f8f8;
 }
@@ -892,12 +917,6 @@ footer {
   flex: 1;
   display: flex;
   flex-direction: column;
-}
-
-.cart-item-title {
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--text-primary);
 }
 
 .cart-item-meta {
@@ -917,7 +936,8 @@ footer {
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  padding: 0.5rem;
+  padding: 0;
+  margin-top: -2px;
   transition: color 0.2s ease;
 }
 
@@ -937,19 +957,31 @@ footer {
   padding-top: 1rem;
   padding-bottom: 1rem;
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  justify-content: space-between;
+  align-items: center;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding-left: 1.5rem;
+  padding-right: 60px; /* Leave space for the close toggle button */
+  height: 60px; /* Match height of toggle button */
+  box-sizing: border-box;
 }
 
 .cart-total {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: bold;
   color: var(--text-primary);
-  text-align: right;
+  /* Hidden when there's an absolute footer, we'll put it inline or somewhere else */
+  display: none;
 }
 
 .btn-checkout {
-  width: 100%;
+  /* Left align the button in the available space */
+  width: auto;
+  min-width: 120px;
+  text-align: center;
 }
 
 .btn-checkout:disabled {

@@ -112,6 +112,10 @@
         <a href="index.html" class="nav-link">Store</a>
         <a href="about.html" class="nav-link">About Us</a>
         <a href="contact.html" class="nav-link">Contact Us</a>
+        <a href="cart.html" class="nav-link" style="position: relative; display: inline-flex; align-items: center;">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span class="nav-cart-badge" id="navCartBadge" style="display: none; position: absolute; top: -8px; right: -12px; background: var(--primary-color); color: white; font-size: 0.65rem; font-weight: bold; height: 18px; min-width: 18px; border-radius: 9px; align-items: center; justify-content: center; padding: 0 4px;">0</span>
+        </a>
       </div>
     </div>
   </nav>
@@ -247,12 +251,15 @@
       </button>
 
       <div class="cart-dropdown-inner" id="cartDropdownInner">
-        <h3 class="cart-title">Your Cart</h3>
+        <h3 class="cart-title">
+          <span>Your Cart</span>
+          <span class="cart-total" id="cartTotal" style="display: block; font-size: 1.1rem; color: var(--primary-color);">Total: $0.00</span>
+        </h3>
         <div class="cart-items" id="cartItems">
           <!-- Items will be injected here by cart.js -->
         </div>
         <div class="cart-footer">
-          <div class="cart-total" id="cartTotal">Total: $0.00</div>
+
           <button class="btn btn-checkout" id="checkoutBtn">Checkout</button>
         </div>
       </div>
