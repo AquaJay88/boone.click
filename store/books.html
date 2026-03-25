@@ -128,7 +128,7 @@
         <div class="ribbon-texture"></div>
       </div>
 
-      <section class="hero container" style="padding-top: 100px; padding-bottom: 100px;">
+      <section class="hero container" style="padding-top: 50px; padding-bottom: 62.5px;">
         <div class="hero-text-grid" style="grid-template-columns: 1fr; text-align: center;">
           <div class="hero-text" style="max-width: 800px; margin: 0 auto;">
             <h1 style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: clamp(3rem, 6vw, 5rem);">
@@ -160,7 +160,7 @@
           overflow: hidden;
           margin-bottom: 1rem;
           background-color: white;
-          aspect-ratio: 1 / 1;
+          aspect-ratio: 4 / 3;
         }
         .product-mini-image img {
           width: 100%;
@@ -174,7 +174,8 @@
         }
         .product-mini-details {
           display: flex;
-          justify-content: space-between;
+          flex-direction: column;
+          justify-content: flex-start;
           align-items: flex-start;
           margin-bottom: 1rem;
           flex-grow: 1;
@@ -186,13 +187,14 @@
           margin: 0;
           color: var(--text-color);
           line-height: 1.2;
+          text-align: left;
         }
         .product-mini-price {
           font-size: 1.2rem;
           font-weight: 600;
           color: var(--primary-color);
           line-height: 1.2;
-          text-align: right;
+          text-align: left;
         }
         .product-mini-btn {
           width: 100%;
@@ -200,7 +202,7 @@
           padding: 0.5rem;
           font-size: 0.9rem;
         }
-        /* Override grid for 4 columns on desktop */
+        /* Override grid for 3 columns on desktop */
         .col-span-responsive {
           grid-column: span 12;
         }
@@ -211,7 +213,7 @@
         }
         @media (min-width: 900px) {
           .col-span-responsive {
-            grid-column: span 3;
+            grid-column: span 4;
           }
         }
       </style>
