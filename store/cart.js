@@ -16,18 +16,25 @@ const publishableKey = "pk_test_51TDC2lBA6S4OMIQxQJjaqJrlyCZF7U5FZHC8F6FRwvJlSOS
 const SUPABASE_CHECKOUT_URL = 'https://alfszmccbxndsrronyfe.supabase.co/functions/v1/create-checkout';
 
 // Function to add item to cart
-function addToCart(priceId, size, color) {
-  const productInfo = PRODUCTS[priceId];
-  if (!productInfo) {
-    console.error("Product not found in products.js");
+function addToCart(priceId, name, size, variation, displayPrice, imageUrl) {
+  if (!priceId) {
+    console.error("No valid price ID found");
     return;
   }
 
-  // Check if item with exact same id, size, and color already exists in cart
+  // Convert string price to number if needed
+  let numericPrice = 0;
+  if(typeof displayPrice === 'string') {
+      numericPrice = parseFloat(displayPrice.replace(/[^0-9.-]+/g,""));
+  } else {
+      numericPrice = displayPrice;
+  }
+
+  // Check if item with exact same id, size, and variation already exists in cart
   const existingItemIndex = cart.findIndex(item =>
     item.id === priceId &&
     item.size === size &&
-    item.color === color
+    item.color === variation
   );
 
   if (existingItemIndex > -1) {
@@ -37,11 +44,12 @@ function addToCart(priceId, size, color) {
     // Add new item
     cart.push({
       id: priceId,
-      name: productInfo.name,
+      name: name,
       size: size,
-      color: color,
-      price: productInfo.price,
-      displayPrice: productInfo.displayPrice,
+      color: variation, // 'color' key kept for backwards compatibility with Edge function if needed
+      price: numericPrice,
+      displayPrice: displayPrice,
+      imageUrl: imageUrl,
       quantity: 1
     });
   }
@@ -100,14 +108,20 @@ function updateCartUI() {
         const itemEl = document.createElement('div');
         itemEl.className = 'cart-item';
 
-        // Generate thumbnail URL
-        const thumbUrl = `https://boone.click/images/card_holders/ch_${item.size.replace('mm', '')}_${item.color}.webp`;
+        // Use stored imageUrl or fallback
+        const thumbUrl = item.imageUrl ? item.imageUrl : '../John Boone Suit (no background).png';
+
+        // Build metadata display logic
+        const metaParts = [];
+        if(item.size) metaParts.push(item.size);
+        if(item.color) metaParts.push(formatColor(item.color));
+        const metaDisplay = metaParts.length > 0 ? `<div class="cart-item-meta">${metaParts.join(' / ')}</div>` : '';
 
         itemEl.innerHTML = `
           <img src="${thumbUrl}" alt="${item.name}" onerror="this.src='../John Boone Suit (no background).png';" class="cart-item-img">
           <div class="cart-item-info">
             <div class="cart-item-title">${item.name}</div>
-            <div class="cart-item-meta">${item.size} / ${formatColor(item.color)}</div>
+            ${metaDisplay}
             <div class="cart-item-price">${item.displayPrice} x ${item.quantity}</div>
           </div>
           <button class="remove-item-btn" onclick="removeFromCart(${index})" aria-label="Remove item">
