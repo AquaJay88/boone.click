@@ -8,7 +8,8 @@
   <!-- Include a lightweight icon set -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://js.stripe.com/v3/"></script>
-  <script src="products.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
   <script src="cart.js" type="text/javascript"></script>
   <style>
     /* Additional Store Specific Styles */
@@ -381,14 +382,104 @@
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       const productGrid = document.getElementById('productGrid');
-      const filterBtns = document.querySelectorAll('.filter-btn');
+      const storeFilters = document.querySelector('.store-filters');
       const searchIcon = document.getElementById('searchIcon');
       const searchInput = document.getElementById('searchInput');
 
       let currentCategory = null;
       let currentSearchTerm = '';
+      let productsData = [];
+
+      // Fetch products from Supabase
+      async function fetchProducts() {
+        const { data: products, error: productsError } = await window.supabaseClient
+          .from('product')
+          .select('*');
+
+        const { data: media, error: mediaError } = await window.supabaseClient
+          .from('product_media')
+          .select('*')
+          .eq('is_default', true);
+
+        if (productsError || mediaError) {
+          console.error('Error fetching products:', productsError || mediaError);
+          return [];
+        }
+
+        const groupedProducts = {};
+
+        products.forEach(p => {
+          if (!groupedProducts[p.product_id]) {
+            groupedProducts[p.product_id] = {
+              id: p.product_id,
+              name: p.name,
+              category: p.category,
+              prices: [],
+              image: '../John Boone Suit (no background).png' // Default image
+            };
+          }
+          if (p.price_display) {
+             groupedProducts[p.product_id].prices.push(parseFloat(String(p.price_display).replace(/[^0-9.-]+/g,"")));
+          }
+        });
+
+        media.forEach(m => {
+          if (groupedProducts[m.product_id]) {
+            // Ensure path is relative to root
+            let imageUrl = m.image_url;
+            if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('../')) {
+               imageUrl = '../' + imageUrl;
+            }
+            groupedProducts[m.product_id].image = imageUrl;
+          }
+        });
+
+        return Object.values(groupedProducts).map(p => {
+          let displayPrice = '';
+          if (p.prices.length > 0) {
+            const minPrice = Math.min(...p.prices);
+            displayPrice = p.prices.length > 1 ? `From $${minPrice.toFixed(2)}` : `$${minPrice.toFixed(2)}`;
+          }
+          return {
+            ...p,
+            displayPrice,
+            url: `product.html?id=${p.id}`
+          };
+        });
+      }
+
+      function generateFilters() {
+        const categories = new Set();
+        productsData.forEach(p => {
+           if (p.category) {
+               categories.add(p.category);
+           }
+        });
+
+        storeFilters.innerHTML = '';
+        categories.forEach(category => {
+          const btn = document.createElement('button');
+          btn.className = 'filter-btn';
+          btn.setAttribute('data-category', category);
+          btn.textContent = category;
+
+          btn.addEventListener('click', () => {
+            if (btn.classList.contains('active')) {
+              btn.classList.remove('active');
+              currentCategory = null;
+            } else {
+              document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+              currentCategory = category;
+            }
+            updateDisplay();
+          });
+          storeFilters.appendChild(btn);
+        });
+      }
+
 
       // Function to render products based on an array
       function renderProducts(productsToRender) {
@@ -425,7 +516,7 @@
 
       // Main function to filter and sort the catalog before rendering
       function updateDisplay() {
-        let filteredCatalog = [...CATALOG];
+        let filteredCatalog = [...productsData];
 
         // Apply Category Filter
         if (currentCategory) {
@@ -448,26 +539,9 @@
       }
 
       // Initial Render
+      productsData = await fetchProducts();
+      generateFilters();
       updateDisplay();
-
-      // Filter Button Event Listeners
-      filterBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-          const category = btn.getAttribute('data-category');
-
-          if (btn.classList.contains('active')) {
-            // Deactivate if already active
-            btn.classList.remove('active');
-            currentCategory = null;
-          } else {
-            // Deactivate all others, activate this one
-            filterBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentCategory = category;
-          }
-          updateDisplay();
-        });
-      });
 
       const searchWrapper = document.querySelector('.search-wrapper');
 
