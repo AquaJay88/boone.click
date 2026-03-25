@@ -361,7 +361,7 @@
 
         <!-- Dynamic Color Selection -->
         <div class="selection-group" id="colorGroup" style="display: none;">
-          <label class="selection-label">Variation</label>
+          <label class="selection-label" id="variationLabel">Variation</label>
           <div class="options-grid" id="colorOptions">
             <!-- Generated dynamically -->
           </div>
@@ -457,7 +457,7 @@
         .from('product_media')
         .select('*')
         .eq('product_id', productId)
-        .order('is_default', { ascending: false });
+        .order('display_order', { ascending: true });
 
       if (!mError && media) {
         // Adjust URLs if needed to be relative to root
@@ -483,28 +483,42 @@
       }
 
       // Render Sizes
-      const sizes = products.filter(p => p.size_label && p.stripe_price_id);
+      const sizes = products.filter(p => p.stripe_price_id);
       if (sizes.length > 0) {
         document.getElementById('sizeGroup').style.display = 'block';
         const sizeContainer = document.getElementById('sizeOptions');
         sizeContainer.innerHTML = '';
         sizes.forEach(s => {
+          const sizeText = s.size_label || 'Standard';
           const btn = document.createElement('button');
           btn.className = 'option-btn';
           btn.setAttribute('data-type', 'size');
           btn.setAttribute('data-id', s.stripe_price_id);
-          btn.setAttribute('data-val', s.size_label);
+          btn.setAttribute('data-val', sizeText);
           btn.setAttribute('data-price', s.price_display);
-          btn.textContent = s.size_label;
+          btn.textContent = sizeText;
           btn.onclick = () => selectOption('size', btn);
           sizeContainer.appendChild(btn);
         });
       }
 
       // Render Variations
-      const variations = [...new Set(imagesList.filter(m => m.variation_value).map(m => m.variation_value))];
+      let variationsSet = new Set();
+      imagesList.forEach(m => {
+        if (m.variation_value) {
+          m.variation_value.split(',').forEach(v => {
+            const trimmed = v.trim();
+            if (trimmed) variationsSet.add(trimmed);
+          });
+        }
+      });
+      const variations = Array.from(variationsSet);
+
       if (variations.length > 0) {
         document.getElementById('colorGroup').style.display = 'block';
+        const variationLabel = document.getElementById('variationLabel');
+        variationLabel.textContent = products[0].variation_type || 'Variation';
+
         const variationContainer = document.getElementById('colorOptions');
         variationContainer.innerHTML = '';
         variations.forEach(v => {
@@ -556,7 +570,14 @@
         document.getElementById('priceDisplay').textContent = state.displayPrice;
       } else if (type === 'variation') {
         state.variationVal = buttonEl.getAttribute('data-val');
-        filterCarouselByVariation(state.variationVal);
+        const targetIndex = imagesList.findIndex(img => {
+          if (!img.variation_value) return false;
+          const vals = img.variation_value.split(',').map(v => v.trim());
+          return vals.includes(state.variationVal);
+        });
+        if (targetIndex !== -1) {
+          goToImage(targetIndex);
+        }
       }
 
       checkSelectionState();
@@ -598,37 +619,15 @@
       );
     }
 
-    function filterCarouselByVariation(variationVal) {
-      // Find images that are either null variation (general) or match the selected variation
-      const validImages = imagesList.filter(img => !img.variation_value || img.variation_value === variationVal);
-
-      const track = document.getElementById('carouselTrack');
-      track.innerHTML = ''; // clear
-
-      if(validImages.length === 0) return;
-
-      validImages.forEach((imgData, index) => {
-         // Create visual index relative to valid images but map back to absolute index in imagesList
-         const absoluteIndex = imagesList.indexOf(imgData);
-         const div = document.createElement('div');
-         div.className = `carousel-item ${absoluteIndex === currentImageIndex ? 'active' : ''}`;
-         div.onclick = () => goToImage(absoluteIndex);
-         const img = document.createElement('img');
-         img.src = imgData.image_url;
-         div.appendChild(img);
-         track.appendChild(div);
-      });
-
-      // Automatically focus first valid image
-      goToImage(imagesList.indexOf(validImages[0]));
-    }
 
     function initCarousel() {
       const track = document.getElementById('carouselTrack');
       track.innerHTML = '';
+      const defaultIndex = imagesList.findIndex(img => img.is_default);
+      const activeIdx = defaultIndex !== -1 ? defaultIndex : 0;
       imagesList.forEach((imgData, index) => {
         const div = document.createElement('div');
-        div.className = `carousel-item ${index === 0 ? 'active' : ''}`;
+        div.className = `carousel-item ${index === activeIdx ? 'active' : ''}`;
         div.onclick = () => goToImage(index);
         const img = document.createElement('img');
         img.src = imgData.image_url;
