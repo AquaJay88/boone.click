@@ -588,7 +588,13 @@
           item.setAttribute('data-type', 'size');
           item.setAttribute('data-id', s.stripe_price_id);
           item.setAttribute('data-val', sizeText);
-          item.setAttribute('data-price', s.price_display);
+
+          let priceStr = String(s.price_display);
+          if (!priceStr.startsWith('$')) {
+            priceStr = '$' + priceStr;
+          }
+          item.setAttribute('data-price', priceStr);
+
           item.textContent = sizeText;
           item.onclick = (e) => {
             selectOption('size', item, selectSelected);
@@ -679,7 +685,13 @@
       if(sizes.length === 0){
           state.sizeVal = 'default';
           state.priceId = products[0].stripe_price_id;
-          state.displayPrice = products[0].price_display;
+
+          let defaultPriceStr = String(products[0].price_display);
+          if (defaultPriceStr !== "null" && defaultPriceStr !== "undefined" && !defaultPriceStr.startsWith('$')) {
+            defaultPriceStr = '$' + defaultPriceStr;
+          }
+          state.displayPrice = defaultPriceStr;
+
           checkSelectionState();
       }
     }
