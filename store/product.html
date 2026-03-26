@@ -538,6 +538,11 @@
 
       // Render Sizes
       const sizes = products.filter(p => p.stripe_price_id);
+      sizes.sort((a, b) => {
+        const priceA = parseFloat(String(a.price_display).replace(/[^0-9.-]+/g,"")) || 0;
+        const priceB = parseFloat(String(b.price_display).replace(/[^0-9.-]+/g,"")) || 0;
+        return priceA - priceB;
+      });
       if (sizes.length > 0) {
         document.getElementById('sizeGroup').style.display = 'block';
         const sizeContainer = document.getElementById('sizeOptions');
@@ -599,6 +604,7 @@
         }
       });
       const variations = Array.from(variationsSet);
+      variations.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
       if (variations.length > 0) {
         document.getElementById('colorGroup').style.display = 'block';
