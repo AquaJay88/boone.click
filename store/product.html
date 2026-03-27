@@ -830,7 +830,8 @@
           item.setAttribute('data-id', s.stripe_price_id);
           item.setAttribute('data-val', sizeText);
 
-          let priceStr = String(s.price_display);
+          let priceVal = parseFloat(String(s.price_display).replace(/[^0-9.-]+/g,\"\"));
+          let priceStr = (isNaN(priceVal) ? 0 : priceVal).toFixed(2);
           if (!priceStr.startsWith('$')) {
             priceStr = '$' + priceStr;
           }
@@ -973,7 +974,8 @@
             state.sizeVal = sizes[0].size_label || 'Standard';
             state.priceId = sizes[0].stripe_price_id;
 
-            let defaultPriceStr = String(sizes[0].price_display);
+            let defaultPriceVal = parseFloat(String(sizes[0].price_display).replace(/[^0-9.-]+/g,\"\"));
+            let defaultPriceStr = (isNaN(defaultPriceVal) ? 0 : defaultPriceVal).toFixed(2);
             if (defaultPriceStr !== "null" && defaultPriceStr !== "undefined" && !defaultPriceStr.startsWith('$')) {
               defaultPriceStr = '$' + defaultPriceStr;
             }
@@ -982,7 +984,8 @@
             state.sizeVal = 'default';
             state.priceId = products[0].stripe_price_id;
 
-            let defaultPriceStr = String(products[0].price_display);
+            let defaultPriceVal = parseFloat(String(products[0].price_display).replace(/[^0-9.-]+/g,\"\"));
+            let defaultPriceStr = (isNaN(defaultPriceVal) ? 0 : defaultPriceVal).toFixed(2);
             if (defaultPriceStr !== "null" && defaultPriceStr !== "undefined" && !defaultPriceStr.startsWith('$')) {
               defaultPriceStr = '$' + defaultPriceStr;
             }
