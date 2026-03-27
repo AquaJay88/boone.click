@@ -699,11 +699,19 @@
          state.variationVal = 'default';
       }
 
-      initCarousel();
+      // Get the Promise from initCarousel but don't await it so we don't block
+      const carouselPromise = initCarousel();
 
       // Select default image if any
       const defaultIndex = imagesList.findIndex(img => img.is_default);
-      goToImage(defaultIndex !== -1 ? defaultIndex : 0);
+      const mainImageIndex = defaultIndex !== -1 ? defaultIndex : 0;
+
+      // Wait for thumbnails to load, then trigger the main image load
+      // The loading animation is removed at the end of goToImage naturally.
+      carouselPromise.then(() => {
+          document.getElementById('carouselTrack').style.visibility = 'visible';
+          goToImage(mainImageIndex);
+      });
 
       // check if no size variants exist, enable button if so
       if(sizes.length === 0){
@@ -814,21 +822,33 @@
     function initCarousel() {
       const track = document.getElementById('carouselTrack');
       track.innerHTML = '';
+      track.style.visibility = 'hidden';
       const defaultIndex = imagesList.findIndex(img => img.is_default);
       const activeIdx = defaultIndex !== -1 ? defaultIndex : 0;
+
+      const imagePromises = [];
       imagesList.forEach((imgData, index) => {
         const div = document.createElement('div');
         div.className = `carousel-item ${index === activeIdx ? 'active' : ''}`;
         div.onclick = () => goToImage(index);
+
         const img = document.createElement('img');
-        img.src = imgData.image_url;
+
+        const p = new Promise((resolve) => {
+          img.onload = resolve;
+          img.onerror = resolve;
+          img.src = imgData.image_url;
+        });
+        imagePromises.push(p);
+
         div.appendChild(img);
         track.appendChild(div);
       });
+      return Promise.all(imagePromises);
     }
 
     function goToImage(index) {
-      if (imagesList.length === 0) return;
+      if (imagesList.length === 0) return Promise.resolve();
       if (index < 0) index = imagesList.length - 1;
       if (index >= imagesList.length) index = 0;
       currentImageIndex = index;
@@ -838,13 +858,21 @@
       // Simple fade effect
       imgEl.style.opacity = 0.5;
 
-      const newImg = new Image();
-      newImg.onload = () => {
-        imgEl.src = imagesList[currentImageIndex].image_url;
-        imgEl.classList.remove('loading-animation');
-        imgEl.style.opacity = 1;
-      };
-      newImg.src = imagesList[currentImageIndex].image_url;
+      const imagePromise = new Promise((resolve) => {
+        const newImg = new Image();
+        newImg.onload = () => {
+          imgEl.src = imagesList[currentImageIndex].image_url;
+          imgEl.classList.remove('loading-animation');
+          imgEl.style.opacity = 1;
+          resolve();
+        };
+        newImg.onerror = () => {
+          imgEl.classList.remove('loading-animation');
+          imgEl.style.opacity = 1;
+          resolve();
+        };
+        newImg.src = imagesList[currentImageIndex].image_url;
+      });
 
       const track = document.getElementById('carouselTrack');
       const items = track.querySelectorAll('.carousel-item');
@@ -859,6 +887,8 @@
              item.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
          }
       });
+
+      return imagePromise;
     }
 
     function prevImage() { goToImage(currentImageIndex - 1); }
