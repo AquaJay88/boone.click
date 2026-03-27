@@ -999,7 +999,7 @@ footer {
   z-index: 1;
   overflow: hidden;
   pointer-events: none;
-  border-radius: inherit;
+  border-radius: 30px;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -1310,7 +1310,7 @@ footer {
   z-index: 1;
   overflow: hidden;
   pointer-events: none;
-  border-radius: inherit;
+  border-radius: 30px;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -1431,4 +1431,12 @@ footer {
     flex-wrap: wrap;
     gap: 1.5rem; /* Give links a little breathing room on mobile */
   }
+}
+
+.floating-cart.active .cart-background {
+  border-radius: var(--radius-lg);
+}
+
+.floating-menu.active .menu-background {
+  border-radius: var(--radius-lg);
 }
