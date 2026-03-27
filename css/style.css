@@ -682,14 +682,17 @@ p { color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.05rem; }
 }
 
 .btn-secondary {
-  background-color: var(--card-bg);
-  color: var(--text-primary);
-  border: 1px solid var(--border-light);
-  box-shadow: var(--bento-shadow);
-}
-.btn-secondary:hover {
-  background-color: var(--bg-color);
+  background-color: transparent;
   color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+}
+
+.btn-secondary:hover {
+  background-color: var(--primary-color);
+  color: white;
+  transform: translateY(-2px);
+  /* Use a fallback since var(--shadow-color) might not be defined everywhere */
+  box-shadow: 0 4px 12px rgba(168, 19, 19, 0.2);
 }
 
 /* Section Titles */
