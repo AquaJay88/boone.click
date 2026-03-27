@@ -79,8 +79,8 @@
       object-fit: cover;
       display: block;
       transition: opacity 0.3s ease;
-      /* Ensure image conforms to the border-radius of the container minus the border thickness */
-      border-radius: calc(var(--radius-lg) - 0.25rem);
+      /* Remove manual inner curve calculation to prevent gaps, let parent overflow: hidden handle clipping */
+      border-radius: 0;
     }
 
     .main-image-container img.loading-animation {
@@ -547,6 +547,11 @@
 
       // Render Sizes
       const sizes = products.filter(p => p.stripe_price_id);
+      sizes.sort((a, b) => {
+        const priceA = parseFloat(String(a.price_display).replace(/[^0-9.-]+/g,"")) || 0;
+        const priceB = parseFloat(String(b.price_display).replace(/[^0-9.-]+/g,"")) || 0;
+        return priceA - priceB;
+      });
       if (sizes.length > 0) {
         document.getElementById('sizeGroup').style.display = 'block';
         const sizeContainer = document.getElementById('sizeOptions');
@@ -608,6 +613,7 @@
         }
       });
       const variations = Array.from(variationsSet);
+      variations.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
       if (variations.length > 0) {
         document.getElementById('colorGroup').style.display = 'block';
