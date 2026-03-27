@@ -709,6 +709,7 @@
       // Wait for thumbnails to load, then trigger the main image load
       // The loading animation is removed at the end of goToImage naturally.
       carouselPromise.then(() => {
+          document.getElementById('carouselTrack').style.visibility = 'visible';
           goToImage(mainImageIndex);
       });
 
@@ -821,6 +822,7 @@
     function initCarousel() {
       const track = document.getElementById('carouselTrack');
       track.innerHTML = '';
+      track.style.visibility = 'hidden';
       const defaultIndex = imagesList.findIndex(img => img.is_default);
       const activeIdx = defaultIndex !== -1 ? defaultIndex : 0;
 
