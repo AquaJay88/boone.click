@@ -1391,3 +1391,44 @@ footer {
   mask-image: radial-gradient(ellipse at center, black 20%, transparent 60%);
   -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 60%);
 }
+
+/* Store Specific Navigation Adjustments */
+.store-nav-container {
+  justify-content: center;
+  position: relative;
+}
+
+.store-nav-logo {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.store-nav-links {
+  margin-left: auto;
+}
+
+@media (max-width: 900px) {
+  .store-nav-container {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .store-nav-logo {
+    position: relative;
+    left: auto;
+    transform: none;
+    margin-bottom: 0.5rem;
+  }
+
+  .store-nav-links {
+    margin-left: 0;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1.5rem; /* Give links a little breathing room on mobile */
+  }
+}
