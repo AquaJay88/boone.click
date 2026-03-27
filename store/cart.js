@@ -20,7 +20,7 @@ const SUPABASE_CHECKOUT_URL = 'https://alfszmccbxndsrronyfe.supabase.co/function
 const SUPABASE_CHECKOUT_TEST_URL = 'https://alfszmccbxndsrronyfe.supabase.co/functions/v1/create-checkout-test';
 
 // Function to add item to cart
-function addToCart(priceId, name, size, variation, displayPrice, imageUrl, isTest = false) {
+function addToCart(priceId, name, size, variation, displayPrice, imageUrl, isTest = false, customText = null) {
   if (!priceId) {
     console.error("No valid price ID found");
     return;
@@ -34,11 +34,12 @@ function addToCart(priceId, name, size, variation, displayPrice, imageUrl, isTes
       numericPrice = displayPrice;
   }
 
-  // Check if item with exact same id, size, and variation already exists in cart
+  // Check if item with exact same id, size, variation, and custom text already exists in cart
   const existingItemIndex = cart.findIndex(item =>
     item.id === priceId &&
     item.size === size &&
-    item.color === variation
+    item.color === variation &&
+    item.customText === customText
   );
 
   if (existingItemIndex > -1) {
@@ -51,6 +52,7 @@ function addToCart(priceId, name, size, variation, displayPrice, imageUrl, isTes
       name: name,
       size: size,
       color: variation, // 'color' key kept for backwards compatibility with Edge function if needed
+      customText: customText,
       price: numericPrice,
       displayPrice: displayPrice,
       imageUrl: imageUrl,
@@ -80,6 +82,20 @@ function saveCart() {
 // Format color to capitalize first letter
 function formatColor(color) {
   return color.charAt(0).toUpperCase() + color.slice(1);
+}
+
+// Escape HTML to prevent XSS
+function escapeHTML(str) {
+  if (!str) return '';
+  return str.replace(/[&<>'"]/g,
+    tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag)
+  );
 }
 
 // Update the Cart UI (Badge and Dropdown items)
@@ -124,13 +140,14 @@ function updateCartUI() {
 
         // Build metadata display logic
         const metaParts = [];
-        if(item.size) metaParts.push(item.size);
-        if(item.color) metaParts.push(formatColor(item.color));
+        if(item.size) metaParts.push(escapeHTML(item.size));
+        if(item.color) metaParts.push(escapeHTML(formatColor(item.color)));
+        if(item.customText) metaParts.push(`"${escapeHTML(item.customText)}"`);
         const metaDisplay = metaParts.length > 0 ? `<div class="cart-item-meta">${metaParts.join(' / ')}</div>` : '';
 
         itemEl.innerHTML = `
           <div class="cart-item-header">
-            <div class="cart-item-title">${item.name}</div>
+            <div class="cart-item-title">${escapeHTML(item.name)}</div>
             <button class="remove-item-btn" onclick="removeFromCart(${index})" aria-label="Remove item">
               <i class="fa-solid fa-trash"></i>
             </button>

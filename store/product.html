@@ -219,6 +219,24 @@
       font-size: 0.95rem; /* Match new size */
     }
 
+    .custom-input {
+      width: 100%;
+      background-color: transparent;
+      border: 2px solid #ddd;
+      border-radius: var(--radius-md);
+      padding: 0.5rem 1rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      color: var(--text-color);
+      transition: all 0.2s ease;
+      box-sizing: border-box;
+    }
+
+    .custom-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+
     /* Target the first span (the name) to take up remaining space, pushing the price and arrow to the right */
     .select-selected > span:first-child {
       flex: 1;
@@ -544,6 +562,17 @@
           </div>
         </div>
 
+        <!-- Dynamic Custom Text Selection -->
+        <div class="selection-group" id="customTextGroup" style="display: none;">
+          <label class="selection-label" id="customTextLabel">Custom Text</label>
+          <div class="options-grid">
+            <input type="text" id="customTextInput" class="custom-input" placeholder="Enter text..." autocomplete="off">
+            <div id="customTextWarning" style="color: #A81313; font-size: 0.85rem; margin-top: 0.5rem; display: none;">
+              For the best results, please stay under 10 characters
+            </div>
+          </div>
+        </div>
+
         <!-- Shipping Info -->
         <div class="shipping-info" style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
           <i class="fa-solid fa-truck" style="color: var(--primary-color);"></i>
@@ -636,7 +665,9 @@
       sizeVal: null,
       priceId: null,
       displayPrice: null,
-      variationVal: null
+      variationVal: null,
+      customTextVal: '',
+      isCustomTextRequired: false
     };
 
     let currentImageIndex = 0;
@@ -835,6 +866,28 @@
          state.variationVal = 'default';
       }
 
+      // Render Custom Text Field
+      if (products[0].custom_field_label && products[0].custom_field_label.trim() !== '') {
+        state.isCustomTextRequired = true;
+        document.getElementById('customTextGroup').style.display = 'block';
+        document.getElementById('customTextLabel').textContent = products[0].custom_field_label;
+
+        const customInput = document.getElementById('customTextInput');
+        const customWarning = document.getElementById('customTextWarning');
+
+        customInput.addEventListener('input', (e) => {
+          state.customTextVal = e.target.value;
+
+          if (state.customTextVal.length > 10) {
+            customWarning.style.display = 'block';
+          } else {
+            customWarning.style.display = 'none';
+          }
+
+          checkSelectionState();
+        });
+      }
+
       // Get the Promise from initCarousel but don't await it so we don't block
       const carouselPromise = initCarousel();
 
@@ -932,9 +985,17 @@
     function checkSelectionState() {
       const btn = document.getElementById('addToCartBtn');
       const errorMsg = document.getElementById('validationError');
-      if (state.sizeVal && state.variationVal) {
+
+      let isValid = state.sizeVal && state.variationVal;
+      if (state.isCustomTextRequired && (!state.customTextVal || state.customTextVal.trim() === '')) {
+        isValid = false;
+      }
+
+      if (isValid) {
         btn.classList.remove('visual-disabled');
         errorMsg.style.display = 'none';
+      } else {
+        btn.classList.add('visual-disabled');
       }
     }
 
@@ -942,7 +1003,12 @@
       const btn = document.getElementById('addToCartBtn');
       const errorMsg = document.getElementById('validationError');
 
-      if (!state.sizeVal || !state.variationVal) {
+      let isValid = state.sizeVal && state.variationVal;
+      if (state.isCustomTextRequired && (!state.customTextVal || state.customTextVal.trim() === '')) {
+        isValid = false;
+      }
+
+      if (!isValid) {
         btn.classList.remove('shake');
         void btn.offsetWidth; // Trigger reflow
         btn.classList.add('shake');
@@ -962,7 +1028,8 @@
          state.variationVal !== 'default' ? state.variationVal : '',
          state.displayPrice,
          imageUrl,
-         isTestMode()
+         isTestMode(),
+         state.isCustomTextRequired ? state.customTextVal.trim() : null
       );
     }
 
