@@ -79,8 +79,8 @@
       object-fit: cover;
       display: block;
       transition: opacity 0.3s ease;
-      /* Ensure image conforms to the border-radius of the container minus the border thickness */
-      border-radius: calc(var(--radius-lg) - 0.25rem);
+      /* Remove manual inner curve calculation to prevent gaps, let parent overflow: hidden handle clipping */
+      border-radius: 0;
     }
 
     .loading-overlay {

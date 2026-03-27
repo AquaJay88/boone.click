@@ -48,3 +48,13 @@
 127.0.0.1 - - [26/Mar/2026 00:48:33] "GET /images/JB%20Red.png HTTP/1.1" 200 -
 127.0.0.1 - - [26/Mar/2026 00:48:33] "GET /store/supabase.js HTTP/1.1" 200 -
 127.0.0.1 - - [26/Mar/2026 00:48:33] "GET /css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [27/Mar/2026 11:41:10] "GET /store/product.html?id=1 HTTP/1.1" 200 -
+127.0.0.1 - - [27/Mar/2026 11:41:10] "GET /store/cart.js HTTP/1.1" 200 -
+127.0.0.1 - - [27/Mar/2026 11:41:10] "GET /store/supabase.js HTTP/1.1" 200 -
+127.0.0.1 - - [27/Mar/2026 11:41:10] "GET /css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [27/Mar/2026 11:41:10] "GET /images/JB%20Red.png HTTP/1.1" 200 -
+127.0.0.1 - - [27/Mar/2026 11:41:43] "GET /store/product.html?id=1 HTTP/1.1" 200 -
+127.0.0.1 - - [27/Mar/2026 11:41:43] "GET /css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [27/Mar/2026 11:41:43] "GET /store/supabase.js HTTP/1.1" 200 -
+127.0.0.1 - - [27/Mar/2026 11:41:43] "GET /store/cart.js HTTP/1.1" 200 -
+127.0.0.1 - - [27/Mar/2026 11:41:43] "GET /images/JB%20Red.png HTTP/1.1" 200 -
