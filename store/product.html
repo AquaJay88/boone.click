@@ -366,8 +366,65 @@
       border-radius: var(--radius-md);
     }
 
+    /* Shipping Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 3000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+    }
+
+    .modal-content {
+      position: relative;
+      width: 50%;
+      max-width: 600px;
+      padding: 2.5rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: translateY(0);
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1.25rem;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .modal-close-btn:hover {
+      color: var(--primary-color);
+    }
+
     /* Mobile Responsive Layout overrides for Product Page */
     @media (max-width: 900px) {
+      .modal-content {
+        width: 90%;
+        padding: 1.5rem;
+      }
+
       .product-page-container.bento-grid {
         display: flex;
         flex-direction: column;
@@ -487,6 +544,13 @@
           </div>
         </div>
 
+        <!-- Shipping Info -->
+        <div class="shipping-info" style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
+          <i class="fa-solid fa-truck" style="color: var(--primary-color);"></i>
+          <span>Items typically ship within 2 weeks</span>
+          <button id="learnMoreShippingBtn" style="background: none; border: none; padding: 0; color: var(--secondary-color-2); text-decoration: underline; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Learn More</button>
+        </div>
+
         <!-- Checkout Action -->
         <div class="buy-btn-container">
           <button id="addToCartBtn" class="btn buy-btn add-to-cart-btn visual-disabled" onclick="handleAddToCart()">
@@ -513,6 +577,22 @@
     <a href="../about.html" class="btn btn-secondary" style="display: inline-block;">Learn about my small business</a>
   </footer>
 </div> <!-- End of .main-content-wrapper -->
+
+  <!-- Shipping Information Modal -->
+  <div id="shippingModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content bento-card">
+      <button class="modal-close-btn" id="closeShippingModalBtn" aria-label="Close Shipping Information">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <h3 style="color: var(--primary-color); margin-bottom: 1rem; margin-top: 0;">Shipping Information</h3>
+      <p style="font-size: 1rem; color: var(--text-primary); margin-bottom: 1rem;">
+        All orders* should be shipped within 2 weeks, though many will be shipped earlier. Most of our products are made to order and then shipped. Items may be made and shipped in a couple of days, but this can be limited by our current volume of orders. If you ordered a product and haven’t received a shipping confirmation within 2 weeks, please let us know!
+      </p>
+      <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0;">
+        *Please note that we currently don’t ship outside of the United States. If you are interested in ordering one of our products over seas, let’s <a href="contact.html" style="text-decoration: underline;">get in touch</a>.
+      </p>
+    </div>
+  </div>
 
   <!-- Floating Cart Menu -->
   <div class="floating-cart" id="floatingCartMenu">
@@ -941,6 +1021,46 @@
 
     function prevImage() { goToImage(currentImageIndex - 1); }
     function nextImage() { goToImage(currentImageIndex + 1); }
+
+    // Shipping Modal Logic
+    document.addEventListener('DOMContentLoaded', () => {
+      const shippingModal = document.getElementById('shippingModal');
+      const learnMoreBtn = document.getElementById('learnMoreShippingBtn');
+      const closeBtn = document.getElementById('closeShippingModalBtn');
+
+      function openModal() {
+        shippingModal.style.display = 'flex';
+        // Small delay to allow display block to apply before adding class for transition
+        setTimeout(() => {
+          shippingModal.classList.add('active');
+        }, 10);
+      }
+
+      function closeModal() {
+        shippingModal.classList.remove('active');
+        setTimeout(() => {
+          shippingModal.style.display = 'none';
+        }, 300); // match transition duration
+      }
+
+      if (learnMoreBtn) {
+        learnMoreBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          openModal();
+        });
+      }
+
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+      }
+
+      // Close when clicking outside modal content
+      window.addEventListener('click', (e) => {
+        if (e.target === shippingModal) {
+          closeModal();
+        }
+      });
+    });
 
     // Initialize image on load
     window.onload = function() {
