@@ -48,7 +48,8 @@ serve(async (req) => {
     // Create a detailed description of the order for metadata
     const orderDetails = items.map((item: any) => {
       const color = item.color ? item.color.charAt(0).toUpperCase() + item.color.slice(1) : '';
-      return `${item.quantity}x ${item.size} ${color}`.trim();
+      const customText = item.customText ? `("${item.customText}")` : '';
+      return `${item.quantity}x ${item.size} ${color} ${customText}`.trim();
     }).join(', ');
 
     // Truncate to 500 chars (Stripe limit for metadata string)
