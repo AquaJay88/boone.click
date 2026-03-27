@@ -733,6 +733,71 @@
          document.getElementById('priceDisplay').textContent = prices.length > 1 ? `From $${minPrice.toFixed(2)}` : `$${minPrice.toFixed(2)}`;
       }
 
+      // Add SEO Metadata and JSON-LD for production only
+      if (!isTest) {
+        const productName = products[0].name;
+        const productDescription = products[0].description || '';
+        const currentUrl = window.location.href;
+
+        let minPrice = 0;
+        if (prices.length > 0) {
+           minPrice = Math.min(...prices);
+        }
+
+        // Default image
+        const defaultImg = imagesList.find(img => img.is_default) || imagesList[0];
+        let imageUrl = '';
+        if (defaultImg && defaultImg.image_url) {
+            // make absolute url
+            imageUrl = new URL(defaultImg.image_url, window.location.origin).href;
+        }
+
+        // 1. Meta Tags
+        document.title = `${productName} | Boone Store`;
+
+        const metaTags = [
+            { name: 'description', content: productDescription },
+            { property: 'og:title', content: productName },
+            { property: 'og:description', content: productDescription },
+            { property: 'og:url', content: currentUrl },
+            { property: 'og:type', content: 'product' }
+        ];
+
+        if (imageUrl) {
+            metaTags.push({ property: 'og:image', content: imageUrl });
+        }
+
+        metaTags.forEach(tag => {
+            const el = document.createElement('meta');
+            for (const key in tag) {
+                el.setAttribute(key, tag[key]);
+            }
+            document.head.appendChild(el);
+        });
+
+        // 2. JSON-LD
+        const jsonLd = {
+            "@context": "https://schema.org/",
+            "@type": "Product",
+            "name": productName,
+            "image": imageUrl ? [imageUrl] : [],
+            "description": productDescription,
+            "url": currentUrl,
+            "offers": {
+                "@type": "Offer",
+                "priceCurrency": "USD",
+                "price": minPrice.toFixed(2),
+                "availability": "https://schema.org/InStock",
+                "url": currentUrl
+            }
+        };
+
+        const scriptTag = document.createElement('script');
+        scriptTag.type = 'application/ld+json';
+        scriptTag.text = JSON.stringify(jsonLd);
+        document.head.appendChild(scriptTag);
+      }
+
       // Render Sizes
       const sizes = products.filter(p => p.stripe_price_id);
       sizes.sort((a, b) => {
