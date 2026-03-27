@@ -54,6 +54,133 @@
       font-weight: 600;
       margin-bottom: 2rem;
     }
+
+    .receipt-container {
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      margin: 2rem auto;
+      max-width: 600px;
+      overflow: hidden;
+      text-align: left;
+    }
+
+    .receipt-header {
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color) 60%, #ffffff 60%, #ffffff 100%);
+      padding: 2rem;
+      position: relative;
+      color: white;
+      min-height: 120px;
+    }
+
+    .receipt-header-logo {
+      position: absolute;
+      bottom: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .receipt-header-logo img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+    }
+
+    .receipt-body {
+      padding: 3rem 2rem 2rem;
+      background: white;
+    }
+
+    .receipt-title {
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-color);
+      margin-bottom: 0.25rem;
+    }
+
+    .receipt-number {
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+
+    .receipt-details-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .receipt-detail-col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .receipt-detail-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.5rem;
+    }
+
+    .receipt-detail-value {
+      font-size: 1rem;
+      color: var(--text-color);
+    }
+
+    .receipt-detail-value strong {
+      font-weight: 600;
+    }
+
+    .receipt-summary-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 1rem;
+    }
+
+    .receipt-summary-box {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+
+    .receipt-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+      color: var(--text-color);
+    }
+
+    .receipt-item:last-of-type {
+      margin-bottom: 1.5rem;
+    }
+
+    .receipt-total {
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid #e9ecef;
+      padding-top: 1rem;
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--text-color);
+    }
+
   </style>
 </head>
 <body>
@@ -90,39 +217,79 @@
       <div class="ribbon-texture"></div>
     </div>
 
+
     <!-- Success Message Container -->
-    <div class="success-container bento-card content-layer">
-      <div class="success-icon">
+    <div class="success-container bento-card content-layer" style="background: transparent; box-shadow: none; border: none; padding-top: 2rem;">
+      <div class="success-icon" id="successIcon">
         <i class="fa-solid fa-circle-check"></i>
       </div>
-      <h1 class="success-title">Thank You For Your Order!</h1>
-      <p class="success-message">
+      <h1 class="success-title" id="successTitle">Thank You For Your Order!</h1>
+      <p class="success-message" id="successMessage">
         Your payment was successful and your order is currently being processed. You will receive an email confirmation with your receipt shortly.
       </p>
 
       <div id="receiptSection" style="display: none;">
-        <!-- In the future, the 'get-checkout-session' Supabase function will populate this with actual receipt data -->
-        <h3 style="margin-bottom: 1rem;">Order Details</h3>
-        <p style="color: var(--text-muted); font-size: 0.9rem;">
-          Detailed receipt loading placeholder...
-        </p>
+        <div class="receipt-container">
+          <div class="receipt-header">
+            <!-- Diagonal gradient background handles the red/white split -->
+            <div class="receipt-header-logo">
+              <img src="../JB Logo.png" alt="JB Logo" style="width: 44px; height: 44px;">
+            </div>
+          </div>
+          <div class="receipt-body">
+            <div class="receipt-title">Receipt from JB Craftsman</div>
+            <div class="receipt-number" id="receiptNumber">Receipt #Loading...</div>
+
+            <div class="receipt-details-grid">
+              <div class="receipt-detail-col">
+                <div class="receipt-detail-label">AMOUNT PAID</div>
+                <div class="receipt-detail-value" id="receiptAmountPaid">$-.--</div>
+              </div>
+              <div class="receipt-detail-col">
+                <div class="receipt-detail-label">DATE PAID</div>
+                <div class="receipt-detail-value" id="receiptDatePaid">Loading...</div>
+              </div>
+              <div class="receipt-detail-col">
+                <div class="receipt-detail-label">PAYMENT METHOD</div>
+                <div class="receipt-detail-value" id="receiptPaymentMethod">Loading...</div>
+              </div>
+            </div>
+
+            <div class="receipt-summary-label">SUMMARY</div>
+            <div class="receipt-summary-box">
+              <div id="receiptItemsList">
+                <!-- Items injected here via JS -->
+              </div>
+
+              <div class="receipt-total">
+                <div>Amount charged</div>
+                <div id="receiptTotalCharged">$-.--</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem;">Stripe Session ID:</p>
-      <div class="session-id-display" id="sessionIdDisplay">
-        Checking...
+      <div id="loadingReceipt" class="loading-receipt">
+        <i class="fa-solid fa-spinner fa-spin"></i> Loading receipt details...
       </div>
 
-      <a href="index.html" class="btn">Return to Store</a>
+      <div style="margin-top: 2rem;">
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem;">Stripe Session ID:</p>
+        <div class="session-id-display" id="sessionIdDisplay">
+          Checking...
+        </div>
+
+        <a href="index.html" class="btn">Return to Store</a>
+      </div>
     </div>
-  </div>
-
-  <footer style="text-align: center; padding: 2rem;">
+<footer style="text-align: center; padding: 2rem;">
     <a href="about.html" class="btn btn-secondary" style="display: inline-block;">Learn about my small business</a>
   </footer>
 </div> <!-- End of .main-content-wrapper -->
 
   <!-- Page Scripts -->
+
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       // Extract the session_id from the URL query parameters
@@ -130,6 +297,8 @@
       const sessionId = urlParams.get('session_id');
 
       const sessionIdDisplay = document.getElementById('sessionIdDisplay');
+      const receiptSection = document.getElementById('receiptSection');
+      const loadingReceipt = document.getElementById('loadingReceipt');
 
       if (sessionId) {
         sessionIdDisplay.textContent = sessionId;
@@ -137,25 +306,145 @@
         // Clear the cart on successful checkout
         localStorage.removeItem('boone_cart');
 
-        // Future Implementation:
-        // Here you will call your second Supabase Edge Function to fetch receipt details
-        // fetch(`https://alfszmccbxndsrronyfe.supabase.co/functions/v1/get-checkout-session?session_id=${sessionId}`)
-        //   .then(res => res.json())
-        //   .then(data => {
-        //       // Hide loading state
-        //       // Populate and show document.getElementById('receiptSection')
-        //   })
-        //   .catch(err => console.error(err));
+        const isTest = sessionId.startsWith('cs_test_');
+        const functionName = isTest ? 'get-checkout-session-test' : 'get-checkout-session';
+
+        fetch(`https://alfszmccbxndsrronyfe.supabase.co/functions/v1/${functionName}?session_id=${sessionId}`)
+          .then(res => res.json())
+          .then(data => {
+            loadingReceipt.style.display = 'none';
+            if (data.error) {
+              console.error("Error fetching session:", data.error);
+              return;
+            }
+
+            // Populate receipt details
+            receiptSection.style.display = 'block';
+
+            // Amount Paid
+            const amountTotal = (data.amount_total / 100).toFixed(2);
+            document.getElementById('receiptAmountPaid').textContent = `$${amountTotal}`;
+            document.getElementById('receiptTotalCharged').textContent = `$${amountTotal}`;
+
+            // Date Paid
+            const date = new Date(data.created * 1000);
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('receiptDatePaid').textContent = date.toLocaleDateString('en-US', options);
+
+            // Receipt Number
+            const paymentIntent = data.payment_intent;
+            if (paymentIntent && paymentIntent.latest_charge && paymentIntent.latest_charge.receipt_number) {
+              document.getElementById('receiptNumber').textContent = `Receipt #${paymentIntent.latest_charge.receipt_number}`;
+            } else if (paymentIntent && paymentIntent.id) {
+              const shortId = paymentIntent.id.substring(paymentIntent.id.length - 8);
+              document.getElementById('receiptNumber').textContent = `Receipt #${shortId}`;
+            } else {
+              document.getElementById('receiptNumber').textContent = `Receipt #${sessionId.substring(sessionId.length - 8)}`;
+            }
+
+            // Payment Method
+            let paymentMethodText = 'Card';
+            if (paymentIntent && paymentIntent.latest_charge && paymentIntent.latest_charge.payment_method_details) {
+              const pmd = paymentIntent.latest_charge.payment_method_details;
+              if (pmd.type === 'card' && pmd.card) {
+                const brand = pmd.card.brand.charAt(0).toUpperCase() + pmd.card.brand.slice(1);
+                paymentMethodText = `<strong>${brand}</strong> - ${pmd.card.last4}`;
+              }
+            }
+            document.getElementById('receiptPaymentMethod').innerHTML = paymentMethodText;
+
+            // Items Summary
+            const itemsList = document.getElementById('receiptItemsList');
+            itemsList.innerHTML = '';
+
+            // Reconstruct line items details
+            // Stripe line items don't have the custom color/size details directly,
+            // we use the cart_items attached in the session metadata by our create-checkout edge function
+            if (data.cart_items && data.cart_items.length > 0) {
+              // Iterate through cart items and find corresponding Stripe line item
+              // Assuming same order, or try to match by price id
+              data.cart_items.forEach(cartItem => {
+                // Find matching line item from Stripe to get the actual total amount charged for this cart line
+                let lineItemAmount = cartItem.price * cartItem.quantity;
+                let matchingLineItem = data.line_items?.data?.find(li => li.price.id === cartItem.id);
+                if (matchingLineItem) {
+                  lineItemAmount = matchingLineItem.amount_total / 100;
+                }
+
+                // Construct name with variation
+                let itemName = cartItem.name;
+                const variations = [];
+                if (cartItem.size && cartItem.size.toLowerCase() !== 'standard') {
+                  variations.push(cartItem.size);
+                }
+                if (cartItem.color) {
+                  variations.push(cartItem.color.charAt(0).toUpperCase() + cartItem.color.slice(1));
+                }
+
+                if (variations.length > 0) {
+                  itemName += ` (${variations.join(' - ')})`;
+                }
+
+                if (cartItem.quantity > 1) {
+                  itemName = `${cartItem.quantity}x ${itemName}`;
+                }
+
+                const itemHtml = `
+                  <div class="receipt-item">
+                    <div>${itemName}</div>
+                    <div>$${lineItemAmount.toFixed(2)}</div>
+                  </div>
+                `;
+                itemsList.innerHTML += itemHtml;
+              });
+
+              // Add shipping if present
+              if (data.shipping_cost && data.shipping_cost.amount_total > 0) {
+                const shippingCost = (data.shipping_cost.amount_total / 100).toFixed(2);
+                itemsList.innerHTML += `
+                  <div class="receipt-item" style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.5rem;">
+                    <div>Shipping</div>
+                    <div>$${shippingCost}</div>
+                  </div>
+                `;
+              }
+            } else if (data.line_items && data.line_items.data) {
+              // Fallback to purely Stripe line items
+              data.line_items.data.forEach(item => {
+                const amount = (item.amount_total / 100).toFixed(2);
+                let itemName = item.description;
+                if (item.quantity > 1) {
+                  itemName = `${item.quantity}x ${itemName}`;
+                }
+                const itemHtml = `
+                  <div class="receipt-item">
+                    <div>${itemName}</div>
+                    <div>$${amount}</div>
+                  </div>
+                `;
+                itemsList.innerHTML += itemHtml;
+              });
+            }
+
+          })
+          .catch(err => {
+            console.error(err);
+            loadingReceipt.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Could not load receipt details.';
+            loadingReceipt.style.color = '#ff8c00';
+          });
 
       } else {
         sessionIdDisplay.textContent = "No session ID found.";
-        document.querySelector('.success-title').textContent = "Order Status Unknown";
-        document.querySelector('.success-message').textContent = "We couldn't find a valid session ID in the URL. If you completed a purchase, don't worry—you will still receive an email receipt.";
-        document.querySelector('.success-icon i').className = "fa-solid fa-circle-exclamation";
-        document.querySelector('.success-icon').style.color = "#ff8c00";
+        document.getElementById('successTitle').textContent = "Order Status Unknown";
+        document.getElementById('successMessage').textContent = "We couldn't find a valid session ID in the URL. If you completed a purchase, don't worry—you will still receive an email receipt.";
+        const icon = document.getElementById('successIcon');
+        icon.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>';
+        icon.style.color = "#ff8c00";
+        loadingReceipt.style.display = 'none';
       }
     });
   </script>
+
 
 </body>
 </html>
