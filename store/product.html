@@ -366,6 +366,54 @@
       border-radius: var(--radius-md);
     }
 
+    /* Mobile Responsive Layout overrides for Product Page */
+    @media (max-width: 900px) {
+      .product-page-container.bento-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 1rem 0;
+      }
+
+      .product-page-container.bento-grid .product-images.col-span-6,
+      .product-page-container.bento-grid .product-details.col-span-6 {
+        width: 100%;
+        flex: none;
+      }
+
+      .product-page-container.bento-grid .product-details.col-span-6 {
+        padding: 1rem;
+      }
+
+      .main-image-container {
+        border-width: 0.25rem;
+      }
+
+      .product-title {
+        font-size: 1.25rem;
+        padding-top: 0;
+      }
+
+      .buy-btn-container {
+        padding-bottom: 0.5rem;
+        margin-top: 1.5rem;
+      }
+
+      .selection-label {
+        font-size: 0.9rem;
+      }
+
+      .select-selected {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
+      }
+
+      .buy-btn {
+        padding: 1rem;
+        font-size: 1.1rem;
+      }
+    }
+
   </style>
 </head>
 <body>
