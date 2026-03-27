@@ -733,10 +733,6 @@ footer {
   right: 2rem;
   width: 60px;
   height: 60px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--border-light);
   border-radius: 30px; /* Fully rounded when closed */
   z-index: 2000;
   box-shadow: var(--bento-hover-shadow);
@@ -1004,6 +1000,10 @@ footer {
   overflow: hidden;
   pointer-events: none;
   border-radius: inherit;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-light);
 }
 
 .cart-blob {
@@ -1204,10 +1204,6 @@ footer {
   right: 2rem;
   width: 60px;
   height: 60px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--border-light);
   border-radius: 30px;
   z-index: 2000;
   box-shadow: var(--bento-hover-shadow);
@@ -1314,6 +1310,11 @@ footer {
   z-index: 1;
   overflow: hidden;
   pointer-events: none;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-light);
 }
 
 .menu-blob {
