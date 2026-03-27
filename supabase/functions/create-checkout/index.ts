@@ -56,6 +56,17 @@ serve(async (req) => {
       ? orderDetails.substring(0, 497) + '...'
       : orderDetails;
 
+    // Serialize cart items into chunks of 500 characters to bypass Stripe metadata length limit
+    const cartJson = JSON.stringify(items);
+    const metadata: Record<string, string> = {
+      orderDetails: safeOrderDetails,
+    };
+
+    // Split JSON string into chunks of 500 chars
+    for (let i = 0; i < cartJson.length; i += 500) {
+      metadata[`cart_${Math.floor(i/500)}`] = cartJson.substring(i, i + 500);
+    }
+
     // Set up the Checkout Session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -63,13 +74,9 @@ serve(async (req) => {
       mode: 'payment',
       // Metadata allows us to attach the selected colors/sizes to the order in Stripe
       payment_intent_data: {
-        metadata: {
-          orderDetails: safeOrderDetails,
-        },
+        metadata: metadata,
       },
-      metadata: {
-        orderDetails: safeOrderDetails,
-      },
+      metadata: metadata,
       // Redirect URLs back to your website
       success_url: successUrl || `https://boone.click/store/success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrl || `https://boone.click/store/index.html`,
