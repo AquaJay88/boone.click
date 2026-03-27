@@ -709,7 +709,7 @@
         const priceB = parseFloat(String(b.price_display).replace(/[^0-9.-]+/g,"")) || 0;
         return priceA - priceB;
       });
-      if (sizes.length > 0) {
+      if (sizes.length > 1) {
         document.getElementById('sizeGroup').style.display = 'block';
         const sizeContainer = document.getElementById('sizeOptions');
         sizeContainer.innerHTML = '';
@@ -849,16 +849,27 @@
           goToImage(mainImageIndex);
       });
 
-      // check if no size variants exist, enable button if so
-      if(sizes.length === 0){
-          state.sizeVal = 'default';
-          state.priceId = products[0].stripe_price_id;
+      // check if no size variants exist or only 1 exists, enable button if so
+      if(sizes.length <= 1){
+          if (sizes.length === 1) {
+            state.sizeVal = sizes[0].size_label || 'Standard';
+            state.priceId = sizes[0].stripe_price_id;
 
-          let defaultPriceStr = String(products[0].price_display);
-          if (defaultPriceStr !== "null" && defaultPriceStr !== "undefined" && !defaultPriceStr.startsWith('$')) {
-            defaultPriceStr = '$' + defaultPriceStr;
+            let defaultPriceStr = String(sizes[0].price_display);
+            if (defaultPriceStr !== "null" && defaultPriceStr !== "undefined" && !defaultPriceStr.startsWith('$')) {
+              defaultPriceStr = '$' + defaultPriceStr;
+            }
+            state.displayPrice = defaultPriceStr;
+          } else {
+            state.sizeVal = 'default';
+            state.priceId = products[0].stripe_price_id;
+
+            let defaultPriceStr = String(products[0].price_display);
+            if (defaultPriceStr !== "null" && defaultPriceStr !== "undefined" && !defaultPriceStr.startsWith('$')) {
+              defaultPriceStr = '$' + defaultPriceStr;
+            }
+            state.displayPrice = defaultPriceStr;
           }
-          state.displayPrice = defaultPriceStr;
 
           checkSelectionState();
       }
