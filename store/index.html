@@ -390,10 +390,14 @@
       let currentSearchTerm = '';
       let productsData = [];
 
+      const urlParams = new URLSearchParams(window.location.search);
+      const isTest = urlParams.get('test') === 'true';
+
       // Fetch products from Supabase
       async function fetchProducts() {
+        const tableName = isTest ? 'test_product' : 'product';
         const { data: products, error: productsError } = await window.supabaseClient
-          .from('product')
+          .from(tableName)
           .select('*');
 
         const { data: media, error: mediaError } = await window.supabaseClient
@@ -440,10 +444,12 @@
             const minPrice = Math.min(...p.prices);
             displayPrice = p.prices.length > 1 ? `From $${minPrice.toFixed(2)}` : `$${minPrice.toFixed(2)}`;
           }
+          let url = `product.html?id=${p.id}`;
+          if (isTest) url += '&test=true';
           return {
             ...p,
             displayPrice,
-            url: `product.html?id=${p.id}`
+            url: url
           };
         });
       }

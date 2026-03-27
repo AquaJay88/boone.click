@@ -646,6 +646,11 @@
       return params.get('id');
     }
 
+    function isTestMode() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('test') === 'true';
+    }
+
     async function initProductPage() {
       const productId = getProductId();
       if (!productId) {
@@ -653,9 +658,12 @@
         return;
       }
 
+      const isTest = isTestMode();
+      const tableName = isTest ? 'test_product' : 'product';
+
       // Fetch Product rows
       const { data: products, error: pError } = await window.supabaseClient
-        .from('product')
+        .from(tableName)
         .select('*')
         .eq('product_id', productId);
 
@@ -942,7 +950,8 @@
          state.sizeVal !== 'default' ? state.sizeVal : '',
          state.variationVal !== 'default' ? state.variationVal : '',
          state.displayPrice,
-         imageUrl
+         imageUrl,
+         isTestMode()
       );
     }
 

@@ -6,6 +6,7 @@ const JB_LOADER_URI = "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSItMzI4LjgwNDU
 let cart = JSON.parse(localStorage.getItem('boone_cart')) || [];
 
 const publishableKey = "pk_test_51TDC2lBA6S4OMIQxQJjaqJrlyCZF7U5FZHC8F6FRwvJlSOSA0K4SrZuYEz546ouV6V5ehxDEklTRbvZzpgcDK3Er00nBtr4SRw";
+const testPublishableKey = "mk_1TDC2nBA6S4OMIQxSJkruEsC";
 
 // Initialize Stripe (requires Stripe.js to be loaded on the page)
 // No longer using direct client-side Stripe initialization since we're using Supabase
@@ -14,11 +15,12 @@ const publishableKey = "pk_test_51TDC2lBA6S4OMIQxQJjaqJrlyCZF7U5FZHC8F6FRwvJlSOS
 //   stripe = Stripe(publishableKey);
 // }
 
-// Supabase Edge Function URL
+// Supabase Edge Function URLs
 const SUPABASE_CHECKOUT_URL = 'https://alfszmccbxndsrronyfe.supabase.co/functions/v1/create-checkout';
+const SUPABASE_CHECKOUT_TEST_URL = 'https://alfszmccbxndsrronyfe.supabase.co/functions/v1/create-checkout-test';
 
 // Function to add item to cart
-function addToCart(priceId, name, size, variation, displayPrice, imageUrl) {
+function addToCart(priceId, name, size, variation, displayPrice, imageUrl, isTest = false) {
   if (!priceId) {
     console.error("No valid price ID found");
     return;
@@ -52,7 +54,8 @@ function addToCart(priceId, name, size, variation, displayPrice, imageUrl) {
       price: numericPrice,
       displayPrice: displayPrice,
       imageUrl: imageUrl,
-      quantity: 1
+      quantity: 1,
+      isTest: isTest
     });
   }
 
@@ -175,8 +178,12 @@ async function handleCheckout() {
   checkoutBtn.disabled = true;
 
   try {
+    // Check if there are any test items in the cart
+    const hasTestItems = cart.some(item => item.isTest);
+    const checkoutUrl = hasTestItems ? SUPABASE_CHECKOUT_TEST_URL : SUPABASE_CHECKOUT_URL;
+
     // Call Supabase Edge Function
-    const response = await fetch(SUPABASE_CHECKOUT_URL, {
+    const response = await fetch(checkoutUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
