@@ -62,6 +62,50 @@
       align-items: stretch; /* Make left and right sides equal height */
     }
 
+    @media (max-width: 900px) {
+      .product-page-container {
+        gap: 0.5rem;
+        padding: 1rem 0;
+      }
+      .product-page-container .col-span-6 {
+        grid-column: span 6 !important;
+        min-width: 0;
+      }
+      .product-page-container .bento-card {
+        padding: 0.75rem !important;
+      }
+
+      /* Scale down components on mobile */
+      .product-title {
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+      }
+      .product-price {
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+      }
+      .main-image-container {
+        border-width: 0.25rem !important;
+      }
+      .selection-label {
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+      }
+      .custom-select {
+        font-size: 0.85rem;
+      }
+      .select-selected {
+        padding: 0.5rem;
+      }
+      .buy-btn {
+        font-size: 0.9rem;
+        padding: 0.75rem 1rem;
+      }
+      .buy-btn-container {
+        margin-top: 1rem !important; /* give it some space but less than desktop */
+      }
+    }
+
     /* Left side: Images */
     .product-images {
       display: flex;
