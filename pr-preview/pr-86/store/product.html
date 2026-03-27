@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product | Boone Store</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <!-- Include a lightweight icon set -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="cart.js"></script>
+  <style>
+    /* Product Page Specific Styles */
+
+    .main-image-container {
+      width: 100%;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      background-color: #f8f8f8; /* Soft background */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      aspect-ratio: 4 / 3;
+      width: 100%;
+      height: auto;
+      /* Teal border with 0.5rem width */
+      border: 0.5rem solid #6FBCCB;
+      padding: 0 !important;
+    }
+
+    .main-image-container:hover .nav-arrow {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .nav-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.5);
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #333;
+      transition: opacity 0.2s, visibility 0.2s, background 0.2s;
+      /* Hidden by default */
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .product-page-container {
+      gap: 3rem;
+      padding: 2rem 0;
+      align-items: stretch; /* Make left and right sides equal height */
+    }
+
+    @media (max-width: 900px) {
+      .product-page-container {
+        gap: 0.5rem;
+        padding: 1rem 0;
+      }
+      .product-page-container .col-span-6 {
+        grid-column: span 6 !important;
+        min-width: 0;
+      }
+      .product-page-container .bento-card {
+        padding: 0.75rem !important;
+      }
+
+      /* Scale down components on mobile */
+      .product-title {
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+      }
+      .product-price {
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+      }
+      .main-image-container {
+        border-width: 0.25rem !important;
+      }
+      .selection-label {
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+      }
+      .custom-select {
+        font-size: 0.85rem;
+      }
+      .select-selected {
+        padding: 0.5rem;
+      }
+      .buy-btn {
+        font-size: 0.9rem;
+        padding: 0.75rem 1rem;
+      }
+      .buy-btn-container {
+        margin-top: 1rem !important; /* give it some space but less than desktop */
+      }
+    }
+
+    /* Left side: Images */
+    .product-images {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      z-index: 10; /* Keep it below navbar */
+      /* align-self defaults to stretch from container */
+    }
+
+    .main-image-container img {
+      max-width: 100%;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: opacity 0.3s ease;
+      /* Remove manual inner curve calculation to prevent gaps, let parent overflow: hidden handle clipping */
+      border-radius: 0;
+    }
+
+    .main-image-container img.loading-animation {
+      width: auto;
+      height: 50%;
+      object-fit: contain;
+    }
+
+    .loading-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      color: var(--primary-color);
+      display: none;
+    }
+
+    /* Right side: Details */
+    .product-details {
+      flex: 1;
+      padding: 0 1rem;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .product-title {
+      font-size: 1.5rem; /* Matches "Craftsman" from navbar */
+      margin-bottom: 0.5rem;
+      color: var(--text-color);
+      padding-top: 2rem;
+    }
+
+    .carousel-container {
+      margin-top: 1rem;
+      width: 100%;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+    }
+
+    .carousel-track {
+      display: flex;
+      gap: 0.5rem;
+      padding-bottom: 0.5rem; /* for scrollbar */
+    }
+
+    .carousel-item {
+      flex: 0 0 80px;
+      height: 80px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.2s, border 0.2s;
+      border: 2px solid transparent;
+    }
+
+    .carousel-item.active, .carousel-item:hover {
+      opacity: 1;
+      border-color: var(--primary-color);
+    }
+
+    .carousel-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: inherit;
+    }
+
+
+
+    .nav-arrow:hover {
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .nav-arrow.left {
+      left: 10px;
+    }
+
+    .nav-arrow.right {
+      right: 10px;
+    }
+
+
+    .product-price {
+      font-size: 0.95rem; /* Matches navbar links */
+      font-weight: 600;
+      color: var(--primary-color);
+      margin-bottom: 1rem;
+    }
+
+    .product-description {
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+    }
+
+    .selection-group {
+      margin-bottom: 1rem; /* Match spacing between dropdowns and price */
+    }
+
+    .selection-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text-color);
+    }
+
+    /* Selection Buttons grid */
+    .options-grid {
+      position: relative;
+    }
+
+    /* Custom Dropdown Styling */
+    .custom-select {
+      position: relative;
+      width: 100%;
+    }
+
+    .select-selected {
+      background-color: transparent;
+      border: 2px solid #ddd;
+      border-radius: var(--radius-md);
+      padding: 0.5rem 1rem; /* Slightly decreased padding */
+      cursor: pointer;
+      font-weight: 500;
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      font-size: 0.95rem; /* Match new size */
+    }
+
+    /* Target the first span (the name) to take up remaining space, pushing the price and arrow to the right */
+    .select-selected > span:first-child {
+      flex: 1;
+      text-align: left;
+    }
+
+    /* Add space between the price and the dropdown arrow */
+    .select-selected .option-price {
+      margin-right: 0.75rem;
+    }
+
+    .select-selected:hover {
+      border-color: var(--primary-color);
+    }
+
+    .select-selected:after {
+      content: '\f078'; /* FontAwesome chevron-down */
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      transition: transform 0.2s;
+      margin-left: auto;
+    }
+
+    .select-selected.select-arrow-active:after {
+      transform: rotate(180deg);
+    }
+
+    .select-items {
+      position: absolute;
+      background-color: var(--card-bg, #fff);
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 99;
+      margin-top: 0.5rem;
+      border: 1px solid var(--border-light, #eee);
+      border-radius: var(--radius-md);
+      box-shadow: 0 4px 12px var(--shadow-color, rgba(0,0,0,0.1));
+      max-height: 250px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      display: none;
+    }
+
+    .select-items.select-hide {
+      display: none;
+    }
+
+    .select-items.show {
+      display: block;
+      animation: fadeInDown 0.2s ease forwards;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .select-items div {
+      padding: 0.5rem 1rem; /* Same as select-selected */
+      font-size: 0.95rem;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+      color: var(--text-color);
+      transition: background-color 0.2s, color 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .select-items div .option-price,
+    .select-selected .option-price {
+      color: var(--primary-color);
+      font-weight: 500;
+    }
+
+    .select-items div:last-child {
+      border-bottom: none;
+    }
+
+    .select-items div:hover, .same-as-selected {
+      background-color: rgba(0,0,0,0.05);
+      color: var(--primary-color);
+    }
+
+    /* Keep hidden in case of js references */
+    .option-btn {
+      display: none;
+    }
+
+    /* Color dots inside buttons */
+    .color-dot {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+      border: 1px solid rgba(0,0,0,0.2);
+    }
+
+    .buy-btn-container {
+      margin-top: auto;
+      padding-top: 0; /* Let flex automatically handle the variable space above */
+      padding-bottom: 2rem; /* Keep existing bottom spacing */
+    }
+
+    .buy-btn {
+      width: 100%;
+      font-size: 1.25rem;
+      padding: 1.25rem;
+      transition: all 0.2s ease;
+    }
+
+    .buy-btn.visual-disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-5px); }
+    }
+
+    .shake {
+      animation: shake 0.3s ease-in-out;
+    }
+
+    .validation-error {
+      color: #A81313;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      display: none;
+      text-align: center;
+    }
+
+    #checkoutError {
+      color: red;
+      margin-top: 1rem;
+      text-align: center;
+      display: none;
+      padding: 1rem;
+      background: #ffeeee;
+      border-radius: var(--radius-md);
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="main-content-wrapper">
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container store-nav-container">
+      <!-- Centered Logo -->
+      <div class="nav-logo store-nav-logo">
+        <a href="index.html" style="color: inherit; text-decoration: none; font-size: 1.5rem;">
+          <img src="../images/JB Red.png" alt="JB Logo" style="height: 1.5em; margin-right: 0.5em; vertical-align: middle;"><span class="craftsman-font" style="vertical-align: middle;">Craftsman</span>
+        </a>
+      </div>
+      <!-- Right-aligned links -->
+      <div class="nav-links store-nav-links">
+        <a href="index.html" class="nav-link">Store</a>
+        <a href="about.html" class="nav-link">About Us</a>
+        <a href="contact.html" class="nav-link">Contact Us</a>
+        <a href="cart.html" class="nav-link" style="position: relative; display: inline-flex; align-items: center;">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span class="nav-cart-badge" id="navCartBadge" style="display: none; position: absolute; top: -8px; right: -12px; background: var(--primary-color); color: white; font-size: 0.65rem; font-weight: bold; height: 18px; min-width: 18px; border-radius: 9px; align-items: center; justify-content: center; padding: 0 4px;">0</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container" style="padding-top: 50px; padding-bottom: 60px;">
+
+    <!-- Product Layout -->
+    <div class="product-page-container bento-grid" style="margin:0;" id="productPageContent">
+
+      <!-- Images Side -->
+      <div class="product-images col-span-6">
+        <div class="main-image-container bento-card" style="position: relative;">
+          <img id="mainProductImage" class="loading-animation" src="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjE5LjIwMyAyMTkuMjAzIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogICAgPHN0eWxlPgogICAgICAgIC5hbmltYXRlZC1wYXRoIHsKICAgICAgICAgICAgZmlsbDogbm9uZTsKICAgICAgICAgICAgc3Ryb2tlLXdpZHRoOiAxOHB4OwogICAgICAgICAgICBzdHJva2UtbGluZWNhcDogcm91bmQ7CiAgICAgICAgfQoKICAgICAgICAuc2VnbWVudC0xIHsgc3Ryb2tlOiAjQTgxMzEzOyBhbmltYXRpb246IHN0cmV0Y2gtMSAyNHMgaW5maW5pdGUgbGluZWFyOyB9CiAgICAgICAgLnNlZ21lbnQtMiB7IHN0cm9rZTogIzQ1NzZBQjsgYW5pbWF0aW9uOiBzdHJldGNoLTIgMjRzIGluZmluaXRlIGxpbmVhcjsgfQogICAgICAgIC5zZWdtZW50LTMgeyBzdHJva2U6ICM2RkJDQ0I7IGFuaW1hdGlvbjogc3RyZXRjaC0zIDI0cyBpbmZpbml0ZSBsaW5lYXI7IH0KCiAgICAgICAgQGtleWZyYW1lcyBzdHJldGNoLTEgewogICAgICAgICAgICAwJSAgICAgIHsgc3Ryb2tlLWRhc2hhcnJheTogNC4xNSAxMDAwOyBzdHJva2UtZGFzaG9mZnNldDogLTguMzg7ICAgYW5pbWF0aW9uLXRpbWluZy1mdW5jdGlvbjogY3ViaWMtYmV6aWVyKDAuNCwgMC4wLCAwLjIsIDEpOyB9CiAgICAgICAgICAgIDYuMjUlICAgeyBzdHJva2UtZGFzaGFycmF5OiAzMy4zIDEwMDA7IHN0cm9rZS1kYXNob2Zmc2V0OiAtNjYuNzI7ICBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgMTIuNSUgICB7IHN0cm9rZS1kYXNoYXJyYXk6IDQuMTUgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC05NS44ODsgIGFuaW1hdGlvbi10aW1pbmctZnVuY3Rpb246IGN1YmljLWJlemllcigwLjQsIDAuMCwgMC4yLCAxKTsgfQogICAgICAgICAgICAxOC43NSUgIHsgc3Ryb2tlLWRhc2hhcnJheTogMzMuMyAxMDAwOyBzdHJva2UtZGFzaG9mZnNldDogLTE1NC4yMjsgYW5pbWF0aW9uLXRpbWluZy1mdW5jdGlvbjogY3ViaWMtYmV6aWVyKDAuNCwgMC4wLCAwLjIsIDEpOyB9CiAgICAgICAgICAgIDI1JSAgICAgeyBzdHJva2UtZGFzaGFycmF5OiA0LjE1IDEwMDA7IHN0cm9rZS1kYXNob2Zmc2V0OiAtMTgzLjM4OyBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgMzEuMjUlICB7IHN0cm9rZS1kYXNoYXJyYXk6IDMzLjMgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC0yNDEuNzI7IGFuaW1hdGlvbi10aW1pbmctZnVuY3Rpb246IGN1YmljLWJlemllcigwLjQsIDAuMCwgMC4yLCAxKTsgfQogICAgICAgICAgICAzNy41JSAgIHsgc3Ryb2tlLWRhc2hhcnJheTogNC4xNSAxMDAwOyBzdHJva2UtZGFzaG9mZnNldDogLTI3MC44ODsgYW5pbWF0aW9uLXRpbWluZy1mdW5jdGlvbjogY3ViaWMtYmV6aWVyKDAuNCwgMC4wLCAwLjIsIDEpOyB9CiAgICAgICAgICAgIDQzLjc1JSAgeyBzdHJva2UtZGFzaGFycmF5OiAzMy4zIDEwMDA7IHN0cm9rZS1kYXNob2Zmc2V0OiAtMzI5LjIyOyBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgNTAlICAgICB7IHN0cm9rZS1kYXNoYXJyYXk6IDQuMTUgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC0zNTguMzg7IGFuaW1hdGlvbi10aW1pbmctZnVuY3Rpb246IGN1YmljLWJlemllcigwLjQsIDAuMCwgMC4yLCAxKTsgfQogICAgICAgICAgICA1Ni4yNSUgIHsgc3Ryb2tlLWRhc2hhcnJheTogMzMuMyAxMDAwOyBzdHJva2UtZGFzaG9mZnNldDogLTQxNi43MjsgYW5pbWF0aW9uLXRpbWluZy1mdW5jdGlvbjogY3ViaWMtYmV6aWVyKDAuNCwgMC4wLCAwLjIsIDEpOyB9CiAgICAgICAgICAgIDYyLjUlICAgeyBzdHJva2UtZGFzaGFycmF5OiA0LjE1IDEwMDA7IHN0cm9rZS1kYXNob2Zmc2V0OiAtNDQ1Ljg4OyBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgNjguNzUlICB7IHN0cm9rZS1kYXNoYXJyYXk6IDMzLjMgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC01MDQuMjI7IGFuaW1hdGlvbi10aW1pbmctZnVuY3Rpb246IGN1YmljLWJlemllcigwLjQsIDAuMCwgMC4yLCAxKTsgfQogICAgICAgICAgICA3NSUgICAgIHsgc3Ryb2tlLWRhc2hhcnJheTogNC4xNSAxMDAwOyBzdHJva2UtZGFzaG9mZnNldDogLTUzMy4zODsgYW5pbWF0aW9uLXRpbWluZy1mdW5jdGlvbjogY3ViaWMtYmV6aWVyKDAuNCwgMC4wLCAwLjIsIDEpOyB9CiAgICAgICAgICAgIDgxLjI1JSAgeyBzdHJva2UtZGFzaGFycmF5OiAzMy4zIDEwMDA7IHN0cm9rZS1kYXNob2Zmc2V0OiAtNTkxLjcyOyBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgODcuNSUgICB7IHN0cm9rZS1kYXNoYXJyYXk6IDQuMTUgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC02MjAuODg7IGFuaW1hdGlvbi10aW1pbmctZnVuY3Rpb246IGN1YmljLWJlemllcigwLjQsIDAuMCwgMC4yLCAxKTsgfQogICAgICAgICAgICA5My43NSUgIHsgc3Ryb2tlLWRhc2hhcnJheTogMzMuMyAxMDAwOyBzdHJva2UtZGFzaG9mZnNldDogLTY3OS4yMjsgYW5pbWF0aW9uLXRpbWluZy1mdW5jdGlvbjogY3ViaWMtYmV6aWVyKDAuNCwgMC4wLCAwLjIsIDEpOyB9CiAgICAgICAgICAgIDEwMCUgICAgeyBzdHJva2UtZGFzaGFycmF5OiA0LjE1IDEwMDA7IHN0cm9rZS1kYXNob2Zmc2V0OiAtNzA4LjM4OyB9CiAgICAgICAgfQoKICAgICAgICBAa2V5ZnJhbWVzIHN0cmV0Y2gtMiB7CiAgICAgICAgICAgIDAlICAgICAgeyBzdHJva2UtZGFzaGFycmF5OiA0LjE1IDEwMDA7IHN0cm9rZS1kYXNob2Zmc2V0OiAtNC4yMjsgICBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgNi4yNSUgICB7IHN0cm9rZS1kYXNoYXJyYXk6IDMzLjMgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC0zMy4zODsgIGFuaW1hdGlvbi10aW1pbmctZnVuY3Rpb246IGN1YmljLWJlemllcigwLjQsIDAuMCwgMC4yLCAxKTsgfQogICAgICAgICAgICAxMi41JSAgIHsgc3Ryb2tlLWRhc2hhcnJheTogNC4xNSAxMDAwOyBzdHJva2UtZGFzaG9mZnNldDogLTkxLjcyOyAgYW5pbWF0aW9uLXRpbWluZy1mdW5jdGlvbjogY3ViaWMtYmV6aWVyKDAuNCwgMC4wLCAwLjIsIDEpOyB9CiAgICAgICAgICAgIDE4Ljc1JSAgeyBzdHJva2UtZGFzaGFycmF5OiAzMy4zIDEwMDA7IHN0cm9rZS1kYXNob2Zmc2V0OiAtMTIwLjg4OyBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgMjUlICAgICB7IHN0cm9rZS1kYXNoYXJyYXk6IDQuMTUgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC0xNzkuMjI7IGFuaW1hdGlvbi10aW1pbmctZnVuY3Rpb246IGN1YmljLWJlemllcigwLjQsIDAuMCwgMC4yLCAxKTsgfQogICAgICAgICAgICAzMS4yNSUgIHsgc3Ryb2tlLWRhc2hhcnJheTogMzMuMyAxMDAwOyBzdHJva2UtZGFzaG9mZnNldDogLTIwOC4zODsgYW5pbWF0aW9uLXRpbWluZy1mdW5jdGlvbjogY3ViaWMtYmV6aWVyKDAuNCwgMC4wLCAwLjIsIDEpOyB9CiAgICAgICAgICAgIDM3LjUlICAgeyBzdHJva2UtZGFzaGFycmF5OiA0LjE1IDEwMDA7IHN0cm9rZS1kYXNob2Zmc2V0OiAtMjY2LjcyOyBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgNDMuNzUlICB7IHN0cm9rZS1kYXNoYXJyYXk6IDMzLjMgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC0yOTUuODg7IGFuaW1hdGlvbi10aW1pbmctZnVuY3Rpb246IGN1YmljLWJlemllcigwLjQsIDAuMCwgMC4yLCAxKTsgfQogICAgICAgICAgICA1MCUgICAgIHsgc3Ryb2tlLWRhc2hhcnJheTogNC4xNSAxMDAwOyBzdHJva2UtZGFzaG9mZnNldDogLTM1NC4yMjsgYW5pbWF0aW9uLXRpbWluZy1mdW5jdGlvbjogY3ViaWMtYmV6aWVyKDAuNCwgMC4wLCAwLjIsIDEpOyB9CiAgICAgICAgICAgIDU2LjI1JSAgeyBzdHJva2UtZGFzaGFycmF5OiAzMy4zIDEwMDA7IHN0cm9rZS1kYXNob2Zmc2V0OiAtMzgzLjM4OyBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgNjIuNSUgICB7IHN0cm9rZS1kYXNoYXJyYXk6IDQuMTUgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC00NDEuNzI7IGFuaW1hdGlvbi10aW1pbmctZnVuY3Rpb246IGN1YmljLWJlemllcigwLjQsIDAuMCwgMC4yLCAxKTsgfQogICAgICAgICAgICA2OC43NSUgIHsgc3Ryb2tlLWRhc2hhcnJheTogMzMuMyAxMDAwOyBzdHJva2UtZGFzaG9mZnNldDogLTQ3MC44ODsgYW5pbWF0aW9uLXRpbWluZy1mdW5jdGlvbjogY3ViaWMtYmV6aWVyKDAuNCwgMC4wLCAwLjIsIDEpOyB9CiAgICAgICAgICAgIDc1JSAgICAgeyBzdHJva2UtZGFzaGFycmF5OiA0LjE1IDEwMDA7IHN0cm9rZS1kYXNob2Zmc2V0OiAtNTI5LjIyOyBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgODEuMjUlICB7IHN0cm9rZS1kYXNoYXJyYXk6IDMzLjMgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC01NTguMzg7IGFuaW1hdGlvbi10aW1pbmctZnVuY3Rpb246IGN1YmljLWJlemllcigwLjQsIDAuMCwgMC4yLCAxKTsgfQogICAgICAgICAgICA4Ny41JSAgIHsgc3Ryb2tlLWRhc2hhcnJheTogNC4xNSAxMDAwOyBzdHJva2UtZGFzaG9mZnNldDogLTYxNi43MjsgYW5pbWF0aW9uLXRpbWluZy1mdW5jdGlvbjogY3ViaWMtYmV6aWVyKDAuNCwgMC4wLCAwLjIsIDEpOyB9CiAgICAgICAgICAgIDkzLjc1JSAgeyBzdHJva2UtZGFzaGFycmF5OiAzMy4zIDEwMDA7IHN0cm9rZS1kYXNob2Zmc2V0OiAtNjQ1Ljg4OyBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgMTAwJSAgICB7IHN0cm9rZS1kYXNoYXJyYXk6IDQuMTUgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC03MDQuMjI7IH0KICAgICAgICB9CgogICAgICAgIEBrZXlmcmFtZXMgc3RyZXRjaC0zIHsKICAgICAgICAgICAgMCUgICAgICB7IHN0cm9rZS1kYXNoYXJyYXk6IDQuMTUgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC0wLjA1OyAgICBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgNi4yNSUgICB7IHN0cm9rZS1kYXNoYXJyYXk6IDMzLjMgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC0wLjA1OyAgICBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgMTIuNSUgICB7IHN0cm9rZS1kYXNoYXJyYXk6IDQuMTUgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC04Ny41NTsgICBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgMTguNzUlICB7IHN0cm9rZS1kYXNoYXJyYXk6IDMzLjMgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC04Ny41NTsgICBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgMjUlICAgICB7IHN0cm9rZS1kYXNoYXJyYXk6IDQuMTUgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC0xNzUuMDU7ICBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgMzEuMjUlICB7IHN0cm9rZS1kYXNoYXJyYXk6IDMzLjMgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC0xNzUuMDU7ICBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgMzcuNSUgICB7IHN0cm9rZS1kYXNoYXJyYXk6IDQuMTUgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC0yNjIuNTU7ICBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgNDMuNzUlICB7IHN0cm9rZS1kYXNoYXJyYXk6IDMzLjMgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC0yNjIuNTU7ICBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgNTAlICAgICB7IHN0cm9rZS1kYXNoYXJyYXk6IDQuMTUgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC0zNTAuMDU7ICBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgNTYuMjUlICB7IHN0cm9rZS1kYXNoYXJyYXk6IDMzLjMgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC0zNTAuMDU7ICBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgNjIuNSUgICB7IHN0cm9rZS1kYXNoYXJyYXk6IDQuMTUgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC00MzcuNTU7ICBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgNjguNzUlICB7IHN0cm9rZS1kYXNoYXJyYXk6IDMzLjMgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC00MzcuNTU7ICBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgNzUlICAgICB7IHN0cm9rZS1kYXNoYXJyYXk6IDQuMTUgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC01MjUuMDU7ICBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgODEuMjUlICB7IHN0cm9rZS1kYXNoYXJyYXk6IDMzLjMgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC01MjUuMDU7ICBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgODcuNSUgICB7IHN0cm9rZS1kYXNoYXJyYXk6IDQuMTUgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC02MTIuNTU7ICBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgOTMuNzUlICB7IHN0cm9rZS1kYXNoYXJyYXk6IDMzLjMgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC02MTIuNTU7ICBhbmltYXRpb24tdGltaW5nLWZ1bmN0aW9uOiBjdWJpYy1iZXppZXIoMC40LCAwLjAsIDAuMiwgMSk7IH0KICAgICAgICAgICAgMTAwJSAgICB7IHN0cm9rZS1kYXNoYXJyYXk6IDQuMTUgMTAwMDsgc3Ryb2tlLWRhc2hvZmZzZXQ6IC03MDAuMDU7IH0KICAgICAgICB9CiAgICA8L3N0eWxlPgogICAgPGRlZnM+CiAgICAgICAgPGNsaXBQYXRoIGlkPSJvY3RhZ29uLWNsaXAiPgogICAgICAgICAgICA8cGF0aCBkPSJNMTU1LDBoLTkwLjc5N2wtNS4xMDksNS4xMDlMNS4xMDksNTkuMDk0bC01LjEwOSw1LjEwOXY5MC43OTdsNS4xMDksNS4xMDksNTMuOTg1LDUzLjk4NSw1LjEwOSw1LjEwOWg5MC43OTdsNS4xMDktNS4xMDksNTMuOTg1LTUzLjk4NSw1LjEwOS01LjEwOXYtOTAuNzk3bC01LjEwOS01LjEwOUwxNjAuMTA5LDUuMTA5bC01LjEwOS01LjEwOWgwTTE0Ny43NzQsMTcuNDQ0bDUzLjk4NSw1My45ODV2NzYuMzQ2bC01My45ODUsNTMuOTg1aC03Ni4zNDZsLTUzLjk4NS01My45ODV2LTc2LjM0Nmw1My45ODUtNTMuOTg1aDc2LjM0NloiLz4KICAgICAgICA8L2NsaXBQYXRoPgogICAgPC9kZWZzPgogICAgCiAgICA8cGF0aCBmaWxsPSIjMDAwMDAwIiBkPSJNMTU1LDBoLTkwLjc5N2wtNS4xMDksNS4xMDlMNS4xMDksNTkuMDk0bC01LjEwOSw1LjEwOXY5MC43OTdsNS4xMDksNS4xMDksNTMuOTg1LDUzLjk4NSw1LjEwOSw1LjEwOWg5MC43OTdsNS4xMDktNS4xMDksNTMuOTg1LTUzLjk4NSw1LjEwOS01LjEwOXYtOTAuNzk3bC01LjEwOS01LjEwOUwxNjAuMTA5LDUuMTA5bC01LjEwOS01LjEwOWgwTTE0Ny43NzQsMTcuNDQ0bDUzLjk4NSw1My45ODV2NzYuMzQ2bC01My45ODUsNTMuOTg1aC03Ni4zNDZsLTUzLjk4NS01My45ODV2LTc2LjM0Nmw1My45ODUtNTMuOTg1aDc2LjM0NloiLz4KICAgIAogICAgPGcgY2xpcC1wYXRoPSJ1cmwoI29jdGFnb24tY2xpcCkiPgogICAgICAgIDxwYXRoIGNsYXNzPSJhbmltYXRlZC1wYXRoIHNlZ21lbnQtMyIgcGF0aExlbmd0aD0iMTAwMCIgZD0iTSA2Ny44MTYgOC43MjIgTCAxNTEuMzg3IDguNzIyIEwgMjEwLjQ4MSA2Ny44MTYgTCAyMTAuNDgxIDE1MS4zODcgTCAxNTEuMzg3IDIxMC40ODEgTCA2Ny44MTYgMjEwLjQ4MSBMIDguNzIyIDE1MS4zODcgTCA4LjcyMiA2Ny44MTYgTCA2Ny44MTYgOC43MjIgTCAxNTEuMzg3IDguNzIyIEwgMjEwLjQ4MSA2Ny44MTYgTCAyMTAuNDgxIDE1MS4zODcgTCAxNTEuMzg3IDIxMC40ODEgTCA2Ny44MTYgMjEwLjQ4MSBMIDguNzIyIDE1MS4zODcgTCA4LjcyMiA2Ny44MTYgTCA2Ny44MTYgOC43MjIgTCAxNTEuMzg3IDguNzIyIEwgMjEwLjQ4MSA2Ny44MTYgTCAyMTAuNDgxIDE1MS4zODcgTCAxNTEuMzg3IDIxMC40ODEgTCA2Ny44MTYgMjEwLjQ4MSBMIDguNzIyIDE1MS4zODcgTCA4LjcyMiA2Ny44MTYgTCA2Ny44MTYgOC43MjIgTCAxNTEuMzg3IDguNzIyIEwgMjEwLjQ4MSA2Ny44MTYgTCAyMTAuNDgxIDE1MS4zODcgTCAxNTEuMzg3IDIxMC40ODEgTCA2Ny44MTYgMjEwLjQ4MSBMIDguNzIyIDE1MS4zODcgTCA4LjcyMiA2Ny44MTYgTCA2Ny44MTYgOC43MjIgTCAxNTEuMzg3IDguNzIyIEwgMjEwLjQ4MSA2Ny44MTYgTCAyMTAuNDgxIDE1MS4zODcgTCAxNTEuMzg3IDIxMC40ODEgTCA2Ny44MTYgMjEwLjQ4MSBMIDguNzIyIDE1MS4zODcgTCA4LjcyMiA2Ny44MTYgTCA2Ny44MTYgOC43MjIgTCAxNTEuMzg3IDguNzIyIEwgMjEwLjQ4MSA2Ny44MTYgTCAyMTAuNDgxIDE1MS4zODcgTCAxNTEuMzg3IDIxMC40ODEgTCA2Ny44MTYgMjEwLjQ4MSBMIDguNzIyIDE1MS4zODcgTCA4LjcyMiA2Ny44MTYgTCA2Ny44MTYgOC43MjIgTCAxNTEuMzg3IDguNzIyIEwgMjEwLjQ4MSA2Ny44MTYgTCAyMTAuNDgxIDE1MS4zODcgTCAxNTEuMzg3IDIxMC40ODEgTCA2Ny44MTYgMjEwLjQ4MSBMIDguNzIyIDE1MS4zODcgTCA4LjcyMiA2Ny44MTYgTCA2Ny44MTYgOC43MjIgTCAxNTEuMzg3IDguNzIyIEwgMjEwLjQ4MSA2Ny44MTYgTCAyMTAuNDgxIDE1MS4zODcgTCAxNTEuMzg3IDIxMC40ODEgTCA2Ny44MTYgMjEwLjQ4MSBMIDguNzIyIDE1MS4zODcgTCA4LjcyMiA2Ny44MTYgTCA2Ny44MTYgOC43MjIgTCAxNTEuMzg3IDguNzIyIEwgMjEwLjQ4MSA2Ny44MTYgTCAyMTAuNDgxIDE1MS4zODcgTCAxNTEuMzg3IDIxMC40ODEgTCA2Ny44MTYgMjEwLjQ4MSBMIDguNzIyIDE1MS4zODcgTCA4LjcyMiA2Ny44MTYgTCA2Ny44MTYgOC43MjIgTCAxNTEuMzg3IDguNzIyIEwgMjEwLjQ4MSA2Ny44MTYgTCAyMTAuNDgxIDE1MS4zODcgTCAxNTEuMzg3IDIxMC40ODEgTCA2Ny44MTYgMjEwLjQ4MSBMIDguNzIyIDE1MS4zODcgTCA4LjcyMiA2Ny44MTYgTCA2Ny44MTYgOC43MjIiIC8+CiAgICAgICAgPHBhdGggY2xhc3M9ImFuaW1hdGVkLXBhdGggc2VnbWVudC0yIiBwYXRoTGVuZ3RoPSIxMDAwIiBkPSJNIDY3LjgxNiA4LjcyMiBMIDE1MS4zODcgOC43MjIgTCAyMTAuNDgxIDY3LjgxNiBMIDIxMC40ODEgMTUxLjM4NyBMIDE1MS4zODcgMjEwLjQ4MSBMIDY3LjgxNiAyMTAuNDgxIEwgOC43MjIgMTUxLjM4NyBMIDguNzIyIDY3LjgxNiBMIDY3LjgxNiA4LjcyMiBMIDE1MS4zODcgOC43MjIgTCAyMTAuNDgxIDY3LjgxNiBMIDIxMC40ODEgMTUxLjM4NyBMIDE1MS4zODcgMjEwLjQ4MSBMIDY3LjgxNiAyMTAuNDgxIEwgOC43MjIgMTUxLjM4NyBMIDguNzIyIDY3LjgxNiBMIDY3LjgxNiA4LjcyMiBMIDE1MS4zODcgOC43MjIgTCAyMTAuNDgxIDY3LjgxNiBMIDIxMC40ODEgMTUxLjM4NyBMIDE1MS4zODcgMjEwLjQ4MSBMIDY3LjgxNiAyMTAuNDgxIEwgOC43MjIgMTUxLjM4NyBMIDguNzIyIDY3LjgxNiBMIDY3LjgxNiA4LjcyMiBMIDE1MS4zODcgOC43MjIgTCAyMTAuNDgxIDY3LjgxNiBMIDIxMC40ODEgMTUxLjM4NyBMIDE1MS4zODcgMjEwLjQ4MSBMIDY3LjgxNiAyMTAuNDgxIEwgOC43MjIgMTUxLjM4NyBMIDguNzIyIDY3LjgxNiBMIDY3LjgxNiA4LjcyMiBMIDE1MS4zODcgOC43MjIgTCAyMTAuNDgxIDY3LjgxNiBMIDIxMC40ODEgMTUxLjM4NyBMIDE1MS4zODcgMjEwLjQ4MSBMIDY3LjgxNiAyMTAuNDgxIEwgOC43MjIgMTUxLjM4NyBMIDguNzIyIDY3LjgxNiBMIDY3LjgxNiA4LjcyMiBMIDE1MS4zODcgOC43MjIgTCAyMTAuNDgxIDY3LjgxNiBMIDIxMC40ODEgMTUxLjM4NyBMIDE1MS4zODcgMjEwLjQ4MSBMIDY3LjgxNiAyMTAuNDgxIEwgOC43MjIgMTUxLjM4NyBMIDguNzIyIDY3LjgxNiBMIDY3LjgxNiA4LjcyMiBMIDE1MS4zODcgOC43MjIgTCAyMTAuNDgxIDY3LjgxNiBMIDIxMC40ODEgMTUxLjM4NyBMIDE1MS4zODcgMjEwLjQ4MSBMIDY3LjgxNiAyMTAuNDgxIEwgOC43MjIgMTUxLjM4NyBMIDguNzIyIDY3LjgxNiBMIDY3LjgxNiA4LjcyMiBMIDE1MS4zODcgOC43MjIgTCAyMTAuNDgxIDY3LjgxNiBMIDIxMC40ODEgMTUxLjM4NyBMIDE1MS4zODcgMjEwLjQ4MSBMIDY3LjgxNiAyMTAuNDgxIEwgOC43MjIgMTUxLjM4NyBMIDguNzIyIDY3LjgxNiBMIDY3LjgxNiA4LjcyMiBMIDE1MS4zODcgOC43MjIgTCAyMTAuNDgxIDY3LjgxNiBMIDIxMC40ODEgMTUxLjM4NyBMIDE1MS4zODcgMjEwLjQ4MSBMIDY3LjgxNiAyMTAuNDgxIEwgOC43MjIgMTUxLjM4NyBMIDguNzIyIDY3LjgxNiBMIDY3LjgxNiA4LjcyMiBMIDE1MS4zODcgOC43MjIgTCAyMTAuNDgxIDY3LjgxNiBMIDIxMC40ODEgMTUxLjM4NyBMIDE1MS4zODcgMjEwLjQ4MSBMIDY3LjgxNiAyMTAuNDgxIEwgOC43MjIgMTUxLjM4NyBMIDguNzIyIDY3LjgxNiBMIDY3LjgxNiA4LjcyMiIgLz4KICAgICAgICA8cGF0aCBjbGFzcz0iYW5pbWF0ZWQtcGF0aCBzZWdtZW50LTEiIHBhdGhMZW5ndGg9IjEwMDAiIGQ9Ik0gNjcuODE2IDguNzIyIEwgMTUxLjM4NyA4LjcyMiBMIDIxMC40ODEgNjcuODE2IEwgMjEwLjQ4MSAxNTEuMzg3IEwgMTUxLjM4NyAyMTAuNDgxIEwgNjcuODE2IDIxMC40ODEgTCA4LjcyMiAxNTEuMzg3IEwgOC43MjIgNjcuODE2IEwgNjcuODE2IDguNzIyIEwgMTUxLjM4NyA4LjcyMiBMIDIxMC40ODEgNjcuODE2IEwgMjEwLjQ4MSAxNTEuMzg3IEwgMTUxLjM4NyAyMTAuNDgxIEwgNjcuODE2IDIxMC40ODEgTCA4LjcyMiAxNTEuMzg3IEwgOC43MjIgNjcuODE2IEwgNjcuODE2IDguNzIyIEwgMTUxLjM4NyA4LjcyMiBMIDIxMC40ODEgNjcuODE2IEwgMjEwLjQ4MSAxNTEuMzg3IEwgMTUxLjM4NyAyMTAuNDgxIEwgNjcuODE2IDIxMC40ODEgTCA4LjcyMiAxNTEuMzg3IEwgOC43MjIgNjcuODE2IEwgNjcuODE2IDguNzIyIEwgMTUxLjM4NyA4LjcyMiBMIDIxMC40ODEgNjcuODE2IEwgMjEwLjQ4MSAxNTEuMzg3IEwgMTUxLjM4NyAyMTAuNDgxIEwgNjcuODE2IDIxMC40ODEgTCA4LjcyMiAxNTEuMzg3IEwgOC43MjIgNjcuODE2IEwgNjcuODE2IDguNzIyIEwgMTUxLjM4NyA4LjcyMiBMIDIxMC40ODEgNjcuODE2IEwgMjEwLjQ4MSAxNTEuMzg3IEwgMTUxLjM4NyAyMTAuNDgxIEwgNjcuODE2IDIxMC40ODEgTCA4LjcyMiAxNTEuMzg3IEwgOC43MjIgNjcuODE2IEwgNjcuODE2IDguNzIyIEwgMTUxLjM4NyA4LjcyMiBMIDIxMC40ODEgNjcuODE2IEwgMjEwLjQ4MSAxNTEuMzg3IEwgMTUxLjM4NyAyMTAuNDgxIEwgNjcuODE2IDIxMC40ODEgTCA4LjcyMiAxNTEuMzg3IEwgOC43MjIgNjcuODE2IEwgNjcuODE2IDguNzIyIEwgMTUxLjM4NyA4LjcyMiBMIDIxMC40ODEgNjcuODE2IEwgMjEwLjQ4MSAxNTEuMzg3IEwgMTUxLjM4NyAyMTAuNDgxIEwgNjcuODE2IDIxMC40ODEgTCA4LjcyMiAxNTEuMzg3IEwgOC43MjIgNjcuODE2IEwgNjcuODE2IDguNzIyIEwgMTUxLjM4NyA4LjcyMiBMIDIxMC40ODEgNjcuODE2IEwgMjEwLjQ4MSAxNTEuMzg3IEwgMTUxLjM4NyAyMTAuNDgxIEwgNjcuODE2IDIxMC40ODEgTCA4LjcyMiAxNTEuMzg3IEwgOC43MjIgNjcuODE2IEwgNjcuODE2IDguNzIyIEwgMTUxLjM4NyA4LjcyMiBMIDIxMC40ODEgNjcuODE2IEwgMjEwLjQ4MSAxNTEuMzg3IEwgMTUxLjM4NyAyMTAuNDgxIEwgNjcuODE2IDIxMC40ODEgTCA4LjcyMiAxNTEuMzg3IEwgOC43MjIgNjcuODE2IEwgNjcuODE2IDguNzIyIEwgMTUxLjM4NyA4LjcyMiBMIDIxMC40ODEgNjcuODE2IEwgMjEwLjQ4MSAxNTEuMzg3IEwgMTUxLjM4NyAyMTAuNDgxIEwgNjcuODE2IDIxMC40ODEgTCA4LjcyMiAxNTEuMzg3IEwgOC43MjIgNjcuODE2IEwgNjcuODE2IDguNzIyIiAvPgogICAgPC9nPgogICAgCiAgICA8cGF0aCBmaWxsPSIjQTgxMzEzIiBkPSJNOTkuMDQ4LDE3OS40NDhoLTMzLjI2NGMtNC45MjItNC43NTctMjAuNDA3LTE5Ljg2Ny0yMC40MDctMTkuODY3bC0uMzY5LTI1LjI1MWgyMC4xMzh2MTcuMjA3bDcuNzc0LDcuMjY1aDYuNWwtLjI1NS05Ny44ODFoLTI3LjI4MmwuMDYxLTcuNzY3LDEzLjMyMS0xMy4xNjZjLjIxOS0uMjcyLDMzLjQuMDMxLDMzLjQuMDMxLjA3OCwwLC4zODIsMTM5LjQyOS4zODIsMTM5LjQyOVoiLz4KICAgIDxwYXRoIGZpbGw9IiNBODEzMTMiIGQ9Ik0xMjQuMjc5LDE1OC44MDJsMjEuOTk3LS4wNTEsNy4xODQtNy4wOTEuMTI2LTI5LjE3Ni03LjAwNC03LjAxNWgtMjIuMzA0djQzLjMzM00xNDYuNTgzLDYwLjkyMWgtMjIuMzA0djMzLjY0N2gyMi4wNDlsNy4yODUtNy4wMDEtLjA2MS0xOS44NDktNi45NjgtNi43OTZNMTUzLjk3NSw0MC4wMTlsMTkuNjUxLDE5Ljk5Ny4wMzIsMzQuMTIyLTEwLjEyLDEwLjQ5OCw5LjkzMSwxMC43MTEuMTQ1LDQzLjg0OS0yMC4xNDksMjAuMjUyaC00OC44MTNWNDAuMDE5aDQ5LjMyM1oiLz4KPC9zdmc+" alt="Product Image">
+          <div class="loading-overlay" id="imageLoadingOverlay">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+          </div>
+          <button class="nav-arrow left" onclick="prevImage()"><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="nav-arrow right" onclick="nextImage()"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+
+        <!-- Carousel -->
+        <div class="carousel-container" id="carouselContainer">
+          <div class="carousel-track" id="carouselTrack">
+            <!-- Dynamically injected images go here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Details Side -->
+      <div class="product-details col-span-6 bento-card" style="overflow: visible;">
+        <h1 class="product-title" id="productTitle">Loading...</h1>
+        <div class="product-price" id="priceDisplay">...</div>
+
+        <!-- Dynamic Size Selection -->
+        <div class="selection-group" id="sizeGroup" style="display: none;">
+          <label class="selection-label" id="sizeLabel">Size</label>
+          <div class="options-grid" id="sizeOptions">
+            <!-- Generated dynamically -->
+          </div>
+        </div>
+
+        <!-- Dynamic Color Selection -->
+        <div class="selection-group" id="colorGroup" style="display: none;">
+          <label class="selection-label" id="variationLabel">Variation</label>
+          <div class="options-grid" id="colorOptions">
+            <!-- Generated dynamically -->
+          </div>
+        </div>
+
+        <!-- Checkout Action -->
+        <div class="buy-btn-container">
+          <button id="addToCartBtn" class="btn buy-btn add-to-cart-btn visual-disabled" onclick="handleAddToCart()">
+            Add to Cart
+          </button>
+          <div id="validationError" class="validation-error">Please select all options.</div>
+        </div>
+
+      </div>
+
+      <!-- Full-Width Description Below -->
+      <div class="product-description-container col-span-12 bento-card">
+        <h2 class="section-title">Product Description</h2>
+        <p class="product-description" id="productDescription" style="margin-bottom: 0;">
+          Loading product description...
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+
+  <footer style="text-align: center; padding: 2rem;">
+    <a href="../about.html" class="btn btn-secondary" style="display: inline-block;">Learn about my small business</a>
+  </footer>
+</div> <!-- End of .main-content-wrapper -->
+
+  <!-- Floating Cart Menu -->
+  <div class="floating-cart" id="floatingCartMenu">
+    <!-- Localized Animation Background -->
+    <div class="cart-background">
+      <div class="cart-blob cart-blob-1"></div>
+      <div class="cart-blob cart-blob-2"></div>
+      <div class="cart-blob cart-blob-3"></div>
+      <div class="cart-texture"></div>
+    </div>
+
+    <!-- Menu Controls & Content -->
+    <div class="cart-content-wrapper">
+      <button class="cart-toggle-btn" id="cartToggleBtn" aria-label="Toggle Cart">
+        <i class="fa-solid fa-cart-shopping open-icon"></i>
+        <i class="fa-solid fa-xmark close-icon"></i>
+        <span class="cart-badge" id="cartBadge">0</span>
+      </button>
+
+      <div class="cart-dropdown-inner" id="cartDropdownInner">
+        <h3 class="cart-title">
+          <span>Your Cart</span>
+          <span class="cart-total" id="cartTotal" style="display: block; font-size: 1.1rem; color: var(--primary-color);">Total: $0.00</span>
+        </h3>
+        <div class="cart-items" id="cartItems">
+          <!-- Items will be injected here by cart.js -->
+        </div>
+        <div class="cart-footer">
+
+          <button class="btn btn-checkout" id="checkoutBtn">Checkout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page Scripts -->
+  <script>
+    let productData = null;
+    let imagesList = [];
+    let state = {
+      sizeVal: null,
+      priceId: null,
+      displayPrice: null,
+      variationVal: null
+    };
+
+    let currentImageIndex = 0;
+
+    function getProductId() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('id');
+    }
+
+    async function initProductPage() {
+      const productId = getProductId();
+      if (!productId) {
+        document.getElementById('productPageContent').innerHTML = '<div style="padding: 2rem;">Product not found.</div>';
+        return;
+      }
+
+      // Fetch Product rows
+      const { data: products, error: pError } = await window.supabaseClient
+        .from('product')
+        .select('*')
+        .eq('product_id', productId);
+
+      if (pError || !products || products.length === 0) {
+        document.getElementById('productPageContent').innerHTML = '<div style="padding: 2rem;">Product not found or error loading.</div>';
+        return;
+      }
+
+      // Fetch Product Media
+      const { data: media, error: mError } = await window.supabaseClient
+        .from('product_media')
+        .select('*')
+        .eq('product_id', productId)
+        .order('display_order', { ascending: true });
+
+      if (!mError && media) {
+        // Adjust URLs if needed to be relative to root
+        imagesList = media.map(m => {
+           let imageUrl = m.image_url;
+           if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('../')) {
+              imageUrl = '../' + imageUrl;
+           }
+           return { ...m, image_url: imageUrl };
+        });
+      }
+
+      productData = products;
+
+      // Render Text Details
+      document.getElementById('productTitle').textContent = products[0].name;
+      document.getElementById('productDescription').innerHTML = products[0].description ? products[0].description.replace(/\n/g, '<br>') : '';
+
+      const prices = products.map(p => p.price_display ? parseFloat(String(p.price_display).replace(/[^0-9.-]+/g,"")) : null).filter(p => p !== null);
+      if (prices.length > 0) {
+         const minPrice = Math.min(...prices);
+         document.getElementById('priceDisplay').textContent = prices.length > 1 ? `From $${minPrice.toFixed(2)}` : `$${minPrice.toFixed(2)}`;
+      }
+
+      // Render Sizes
+      const sizes = products.filter(p => p.stripe_price_id);
+      sizes.sort((a, b) => {
+        const priceA = parseFloat(String(a.price_display).replace(/[^0-9.-]+/g,"")) || 0;
+        const priceB = parseFloat(String(b.price_display).replace(/[^0-9.-]+/g,"")) || 0;
+        return priceA - priceB;
+      });
+      if (sizes.length > 0) {
+        document.getElementById('sizeGroup').style.display = 'block';
+        const sizeContainer = document.getElementById('sizeOptions');
+        sizeContainer.innerHTML = '';
+
+        // Custom Dropdown Wrapper
+        const customSelect = document.createElement('div');
+        customSelect.className = 'custom-select';
+
+        const selectSelected = document.createElement('div');
+        selectSelected.className = 'select-selected';
+        const initialTextSpan = document.createElement('span');
+        initialTextSpan.textContent = 'Select Size...';
+        selectSelected.appendChild(initialTextSpan);
+
+        const selectItems = document.createElement('div');
+        selectItems.className = 'select-items select-hide';
+
+        sizes.forEach(s => {
+          const sizeText = s.size_label || 'Standard';
+          const item = document.createElement('div');
+          item.setAttribute('data-type', 'size');
+          item.setAttribute('data-id', s.stripe_price_id);
+          item.setAttribute('data-val', sizeText);
+
+          let priceStr = String(s.price_display);
+          if (!priceStr.startsWith('$')) {
+            priceStr = '$' + priceStr;
+          }
+          item.setAttribute('data-price', priceStr);
+
+          const sizeNameSpan = document.createElement('span');
+          sizeNameSpan.textContent = sizeText;
+          const sizePriceSpan = document.createElement('span');
+          sizePriceSpan.textContent = priceStr;
+          sizePriceSpan.className = 'option-price';
+
+          item.appendChild(sizeNameSpan);
+          item.appendChild(sizePriceSpan);
+
+          item.onclick = (e) => {
+            selectOption('size', item, selectSelected);
+            selectSelected.click(); // Close dropdown
+          };
+          selectItems.appendChild(item);
+        });
+
+        selectSelected.onclick = function(e) {
+          e.stopPropagation();
+          closeAllSelect(this);
+          this.nextSibling.classList.toggle('select-hide');
+          this.nextSibling.classList.toggle('show');
+          this.classList.toggle('select-arrow-active');
+        };
+
+        customSelect.appendChild(selectSelected);
+        customSelect.appendChild(selectItems);
+        sizeContainer.appendChild(customSelect);
+      }
+
+      // Render Variations
+      let variationsSet = new Set();
+      imagesList.forEach(m => {
+        if (m.variation_value) {
+          m.variation_value.split(',').forEach(v => {
+            const trimmed = v.trim();
+            if (trimmed) variationsSet.add(trimmed);
+          });
+        }
+      });
+      const variations = Array.from(variationsSet);
+      variations.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
+      if (variations.length > 0) {
+        document.getElementById('colorGroup').style.display = 'block';
+        const variationLabel = document.getElementById('variationLabel');
+        variationLabel.textContent = products[0].variation_type || 'Variation';
+
+        const variationContainer = document.getElementById('colorOptions');
+        variationContainer.innerHTML = '';
+
+        // Custom Dropdown Wrapper
+        const customSelect = document.createElement('div');
+        customSelect.className = 'custom-select';
+
+        const selectSelected = document.createElement('div');
+        selectSelected.className = 'select-selected';
+        const initialTextSpan = document.createElement('span');
+        initialTextSpan.textContent = `Select ${variationLabel.textContent}...`;
+        selectSelected.appendChild(initialTextSpan);
+
+        const selectItems = document.createElement('div');
+        selectItems.className = 'select-items select-hide';
+
+        variations.forEach(v => {
+          const item = document.createElement('div');
+          item.setAttribute('data-type', 'variation');
+          item.setAttribute('data-val', v);
+
+          const variationNameSpan = document.createElement('span');
+          variationNameSpan.textContent = v;
+          item.appendChild(variationNameSpan);
+
+          item.onclick = (e) => {
+            selectOption('variation', item, selectSelected);
+            selectSelected.click(); // Close dropdown
+          };
+          selectItems.appendChild(item);
+        });
+
+        selectSelected.onclick = function(e) {
+          e.stopPropagation();
+          closeAllSelect(this);
+          this.nextSibling.classList.toggle('select-hide');
+          this.nextSibling.classList.toggle('show');
+          this.classList.toggle('select-arrow-active');
+        };
+
+        customSelect.appendChild(selectSelected);
+        customSelect.appendChild(selectItems);
+        variationContainer.appendChild(customSelect);
+      } else {
+         // If no variations but there are sizes, auto-select state logic expects variation to not block checkout
+         state.variationVal = 'default';
+      }
+
+      // Get the Promise from initCarousel but don't await it so we don't block
+      const carouselPromise = initCarousel();
+
+      // Select default image if any
+      const defaultIndex = imagesList.findIndex(img => img.is_default);
+      const mainImageIndex = defaultIndex !== -1 ? defaultIndex : 0;
+
+      // Wait for thumbnails to load, then trigger the main image load
+      // The loading animation is removed at the end of goToImage naturally.
+      carouselPromise.then(() => {
+          document.getElementById('carouselTrack').style.visibility = 'visible';
+          goToImage(mainImageIndex);
+      });
+
+      // check if no size variants exist, enable button if so
+      if(sizes.length === 0){
+          state.sizeVal = 'default';
+          state.priceId = products[0].stripe_price_id;
+
+          let defaultPriceStr = String(products[0].price_display);
+          if (defaultPriceStr !== "null" && defaultPriceStr !== "undefined" && !defaultPriceStr.startsWith('$')) {
+            defaultPriceStr = '$' + defaultPriceStr;
+          }
+          state.displayPrice = defaultPriceStr;
+
+          checkSelectionState();
+      }
+    }
+
+
+    function closeAllSelect(elmnt) {
+      const x = document.getElementsByClassName("select-items");
+      const y = document.getElementsByClassName("select-selected");
+      const arrNo = [];
+      for (let i = 0; i < y.length; i++) {
+        if (elmnt == y[i]) {
+          arrNo.push(i)
+        } else {
+          y[i].classList.remove("select-arrow-active");
+        }
+      }
+      for (let i = 0; i < x.length; i++) {
+        if (arrNo.indexOf(i)) {
+          x[i].classList.add("select-hide");
+          x[i].classList.remove("show");
+        }
+      }
+    }
+
+    document.addEventListener("click", closeAllSelect);
+
+    function selectOption(type, buttonEl, selectSelectedEl) {
+      // Remove same-as-selected class from all siblings
+      const siblings = buttonEl.parentNode.children;
+      for (let i = 0; i < siblings.length; i++) {
+        siblings[i].classList.remove("same-as-selected");
+      }
+
+      // Add selected class to clicked item
+      buttonEl.classList.add('same-as-selected');
+      selectSelectedEl.innerHTML = buttonEl.innerHTML;
+
+      // Update state
+      if (type === 'size') {
+        state.sizeVal = buttonEl.getAttribute('data-val');
+        state.priceId = buttonEl.getAttribute('data-id');
+        state.displayPrice = buttonEl.getAttribute('data-price');
+        document.getElementById('priceDisplay').textContent = state.displayPrice;
+      } else if (type === 'variation') {
+        state.variationVal = buttonEl.getAttribute('data-val');
+        const targetIndex = imagesList.findIndex(img => {
+          if (!img.variation_value) return false;
+          const vals = img.variation_value.split(',').map(v => v.trim());
+          return vals.includes(state.variationVal);
+        });
+        if (targetIndex !== -1) {
+          goToImage(targetIndex);
+        }
+      }
+
+      checkSelectionState();
+    }
+
+    function checkSelectionState() {
+      const btn = document.getElementById('addToCartBtn');
+      const errorMsg = document.getElementById('validationError');
+      if (state.sizeVal && state.variationVal) {
+        btn.classList.remove('visual-disabled');
+        errorMsg.style.display = 'none';
+      }
+    }
+
+    function handleAddToCart() {
+      const btn = document.getElementById('addToCartBtn');
+      const errorMsg = document.getElementById('validationError');
+
+      if (!state.sizeVal || !state.variationVal) {
+        btn.classList.remove('shake');
+        void btn.offsetWidth; // Trigger reflow
+        btn.classList.add('shake');
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      // Find product name and default image to send to cart
+      const productName = productData[0].name;
+      const defaultImg = imagesList.find(m => m.is_default) || imagesList[0];
+      const imageUrl = defaultImg ? defaultImg.image_url : '';
+
+      window.addToCart(
+         state.priceId,
+         productName,
+         state.sizeVal !== 'default' ? state.sizeVal : '',
+         state.variationVal !== 'default' ? state.variationVal : '',
+         state.displayPrice,
+         imageUrl
+      );
+    }
+
+
+    function initCarousel() {
+      const track = document.getElementById('carouselTrack');
+      track.innerHTML = '';
+      track.style.visibility = 'hidden';
+      const defaultIndex = imagesList.findIndex(img => img.is_default);
+      const activeIdx = defaultIndex !== -1 ? defaultIndex : 0;
+
+      const imagePromises = [];
+      imagesList.forEach((imgData, index) => {
+        const div = document.createElement('div');
+        div.className = `carousel-item ${index === activeIdx ? 'active' : ''}`;
+        div.onclick = () => goToImage(index);
+
+        const img = document.createElement('img');
+
+        const p = new Promise((resolve) => {
+          img.onload = resolve;
+          img.onerror = resolve;
+          img.src = imgData.image_url;
+        });
+        imagePromises.push(p);
+
+        div.appendChild(img);
+        track.appendChild(div);
+      });
+      return Promise.all(imagePromises);
+    }
+
+    function goToImage(index) {
+      if (imagesList.length === 0) return Promise.resolve();
+      if (index < 0) index = imagesList.length - 1;
+      if (index >= imagesList.length) index = 0;
+      currentImageIndex = index;
+
+      const imgEl = document.getElementById('mainProductImage');
+
+      // Simple fade effect
+      imgEl.style.opacity = 0.5;
+
+      const imagePromise = new Promise((resolve) => {
+        const newImg = new Image();
+        newImg.onload = () => {
+          imgEl.src = imagesList[currentImageIndex].image_url;
+          imgEl.classList.remove('loading-animation');
+          imgEl.style.opacity = 1;
+          resolve();
+        };
+        newImg.onerror = () => {
+          imgEl.classList.remove('loading-animation');
+          imgEl.style.opacity = 1;
+          resolve();
+        };
+        newImg.src = imagesList[currentImageIndex].image_url;
+      });
+
+      const track = document.getElementById('carouselTrack');
+      const items = track.querySelectorAll('.carousel-item');
+
+      // Since carousel items might be filtered, we need to find by src or we rebuild track
+      // Rebuild the active state
+      Array.from(track.children).forEach(item => {
+         item.classList.remove('active');
+         // Extract filename for simple comparison
+         if(item.querySelector('img').src.includes(imagesList[currentImageIndex].image_url.split('/').pop())) {
+             item.classList.add('active');
+             item.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+         }
+      });
+
+      return imagePromise;
+    }
+
+    function prevImage() { goToImage(currentImageIndex - 1); }
+    function nextImage() { goToImage(currentImageIndex + 1); }
+
+    // Initialize image on load
+    window.onload = function() {
+      initProductPage();
+    };
+  </script>
+
+</body>
+</html>
