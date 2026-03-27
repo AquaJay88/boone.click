@@ -213,11 +213,21 @@
       font-weight: 500;
       color: var(--text-color);
       display: flex;
-      justify-content: space-between;
       align-items: center;
       transition: all 0.2s ease;
       font-family: inherit;
       font-size: 0.95rem; /* Match new size */
+    }
+
+    /* Target the first span (the name) to take up remaining space, pushing the price and arrow to the right */
+    .select-selected > span:first-child {
+      flex: 1;
+      text-align: left;
+    }
+
+    /* Add space between the price and the dropdown arrow */
+    .select-selected .option-price {
+      margin-right: 0.75rem;
     }
 
     .select-selected:hover {
@@ -229,6 +239,7 @@
       font-family: 'Font Awesome 6 Free';
       font-weight: 900;
       transition: transform 0.2s;
+      margin-left: auto;
     }
 
     .select-selected.select-arrow-active:after {
@@ -248,6 +259,7 @@
       box-shadow: 0 4px 12px var(--shadow-color, rgba(0,0,0,0.1));
       max-height: 250px;
       overflow-y: auto;
+      overscroll-behavior: contain;
       display: none;
     }
 
@@ -272,6 +284,15 @@
       border-bottom: 1px solid #eee;
       color: var(--text-color);
       transition: background-color 0.2s, color 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .select-items div .option-price,
+    .select-selected .option-price {
+      color: var(--primary-color);
+      font-weight: 500;
     }
 
     .select-items div:last-child {
@@ -398,7 +419,7 @@
       </div>
 
       <!-- Details Side -->
-      <div class="product-details col-span-6 bento-card">
+      <div class="product-details col-span-6 bento-card" style="overflow: visible;">
         <h1 class="product-title" id="productTitle">Loading...</h1>
         <div class="product-price" id="priceDisplay">...</div>
 
@@ -563,7 +584,9 @@
 
         const selectSelected = document.createElement('div');
         selectSelected.className = 'select-selected';
-        selectSelected.textContent = 'Select Size...';
+        const initialTextSpan = document.createElement('span');
+        initialTextSpan.textContent = 'Select Size...';
+        selectSelected.appendChild(initialTextSpan);
 
         const selectItems = document.createElement('div');
         selectItems.className = 'select-items select-hide';
@@ -581,7 +604,15 @@
           }
           item.setAttribute('data-price', priceStr);
 
-          item.textContent = sizeText;
+          const sizeNameSpan = document.createElement('span');
+          sizeNameSpan.textContent = sizeText;
+          const sizePriceSpan = document.createElement('span');
+          sizePriceSpan.textContent = priceStr;
+          sizePriceSpan.className = 'option-price';
+
+          item.appendChild(sizeNameSpan);
+          item.appendChild(sizePriceSpan);
+
           item.onclick = (e) => {
             selectOption('size', item, selectSelected);
             selectSelected.click(); // Close dropdown
@@ -629,7 +660,9 @@
 
         const selectSelected = document.createElement('div');
         selectSelected.className = 'select-selected';
-        selectSelected.textContent = `Select ${variationLabel.textContent}...`;
+        const initialTextSpan = document.createElement('span');
+        initialTextSpan.textContent = `Select ${variationLabel.textContent}...`;
+        selectSelected.appendChild(initialTextSpan);
 
         const selectItems = document.createElement('div');
         selectItems.className = 'select-items select-hide';
@@ -638,7 +671,11 @@
           const item = document.createElement('div');
           item.setAttribute('data-type', 'variation');
           item.setAttribute('data-val', v);
-          item.textContent = v;
+
+          const variationNameSpan = document.createElement('span');
+          variationNameSpan.textContent = v;
+          item.appendChild(variationNameSpan);
+
           item.onclick = (e) => {
             selectOption('variation', item, selectSelected);
             selectSelected.click(); // Close dropdown
@@ -714,7 +751,7 @@
 
       // Add selected class to clicked item
       buttonEl.classList.add('same-as-selected');
-      selectSelectedEl.textContent = buttonEl.textContent;
+      selectSelectedEl.innerHTML = buttonEl.innerHTML;
 
       // Update state
       if (type === 'size') {
