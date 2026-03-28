@@ -54,7 +54,7 @@ function addToCart(priceId, name, size, variation, displayPrice, imageUrl, isTes
       color: variation, // 'color' key kept for backwards compatibility with Edge function if needed
       customText: customText,
       price: numericPrice,
-      displayPrice: displayPrice,
+      displayPrice: '$' + numericPrice.toFixed(2),
       imageUrl: imageUrl,
       quantity: 1,
       isTest: isTest

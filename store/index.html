@@ -423,7 +423,8 @@
             };
           }
           if (p.price_display) {
-             groupedProducts[p.product_id].prices.push(parseFloat(String(p.price_display).replace(/[^0-9.-]+/g,"")));
+             let parsedPrice = parseFloat(String(p.price_display).replace(/[^0-9.-]+/g,\"\"));
+             groupedProducts[p.product_id].prices.push(isNaN(parsedPrice) ? 0 : parsedPrice);
           }
         });
 
