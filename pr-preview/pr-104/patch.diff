@@ -1,0 +1,15 @@
+--- store/product.html
++++ store/product.html
+@@ -300,9 +300,9 @@
+       border: 1px solid rgba(0,0,0,0.2);
+     }
+
+     .buy-btn-container {
+-      margin-top: auto; /* Push to the bottom */
+-      padding-top: 3rem;
++      margin-top: auto;
++      padding-top: 3rem; /* ensures the spacing is above when pushed to bottom */
++      padding-bottom: 2rem; /* restore original bottom padding */
+     }
+
+     .buy-btn {
