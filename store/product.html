@@ -544,7 +544,15 @@
       <!-- Details Side -->
       <div class="product-details col-span-6 bento-card" style="overflow: visible;">
         <h1 class="product-title" id="productTitle">Loading...</h1>
-        <div class="product-price" id="priceDisplay">...</div>
+        <div class="product-price" id="priceDisplay" style="margin-bottom: 0.5rem;">...</div>
+
+        <!-- Star Rating and Review Count -->
+        <div id="productRatingContainer" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; color: var(--text-secondary); font-size: 0.95rem;">
+          <div id="productStarIcon" style="color: var(--primary-color);">
+            <i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>
+          </div>
+          <div id="productReviewCount">0 reviews</div>
+        </div>
 
         <!-- Dynamic Size Selection -->
         <div class="selection-group" id="sizeGroup" style="display: none;">
@@ -596,6 +604,14 @@
         <p class="product-description" id="productDescription" style="margin-bottom: 0;">
           Loading product description...
         </p>
+      </div>
+
+      <!-- Reviews Component Below Description -->
+      <div id="productReviewsComponent" class="col-span-12 bento-card" style="display: none; padding-top: 2rem;">
+        <h2 class="section-title" style="margin-top: 0;">Customer Reviews</h2>
+        <div id="productReviewsList" style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <!-- Individual reviews will be injected here -->
+        </div>
       </div>
 
     </div>
@@ -726,6 +742,9 @@
       // Render Text Details
       document.getElementById('productTitle').textContent = products[0].name;
       document.getElementById('productDescription').innerHTML = products[0].description ? products[0].description.replace(/\n/g, '<br>') : '';
+
+      // Init reviews component
+      initReviews(products[0].name);
 
       const prices = products.map(p => p.price_display ? parseFloat(String(p.price_display).replace(/[^0-9.-]+/g,"")) : null).filter(p => p !== null);
       if (prices.length > 0) {
@@ -1216,6 +1235,98 @@
         }
       });
     });
+
+    async function initReviews(productName) {
+      if (!productName) return;
+
+      const { data: reviews, error } = await window.supabaseClient
+        .from('reviews')
+        .select('*')
+        .eq('product_name', productName)
+        .order('stars', { ascending: false });
+
+      const starContainer = document.getElementById('productStarIcon');
+      const reviewCountContainer = document.getElementById('productReviewCount');
+      const reviewsComponent = document.getElementById('productReviewsComponent');
+      const reviewsList = document.getElementById('productReviewsList');
+
+      if (error || !reviews || reviews.length === 0) {
+        starContainer.innerHTML = '<i class="fa-regular fa-star"></i>'.repeat(5);
+        reviewCountContainer.textContent = '0 reviews';
+        reviewsComponent.style.display = 'none';
+        return;
+      }
+
+      // Calculate average stars
+      let totalStars = 0;
+      reviews.forEach(r => totalStars += (parseInt(r.stars) || 0));
+      const averageStars = totalStars / reviews.length;
+
+      // Round up to nearest half-star
+      const roundedStars = Math.ceil(averageStars * 2) / 2;
+
+      // Render stars dynamically
+      let starsHtml = '';
+      for (let i = 1; i <= 5; i++) {
+        if (roundedStars >= i) {
+          starsHtml += '<i class="fa-solid fa-star"></i>';
+        } else if (roundedStars === i - 0.5) {
+          starsHtml += '<i class="fa-solid fa-star-half-stroke"></i>';
+        } else {
+          starsHtml += '<i class="fa-regular fa-star"></i>';
+        }
+      }
+      starContainer.innerHTML = starsHtml;
+
+      const countLabel = reviews.length === 1 ? 'review' : 'reviews';
+      reviewCountContainer.textContent = `${reviews.length} ${countLabel}`;
+
+      // Render reviews list
+      reviewsComponent.style.display = 'block';
+      reviewsList.innerHTML = '';
+
+      reviews.forEach((review, index) => {
+        const starCount = parseInt(review.stars) || 5;
+        let reviewStarsHtml = '';
+        for (let i = 0; i < 5; i++) {
+          if (i < starCount) {
+            reviewStarsHtml += '<i class="fa-solid fa-star"></i>';
+          } else {
+            reviewStarsHtml += '<i class="fa-regular fa-star"></i>';
+          }
+        }
+
+        const reviewEl = document.createElement('div');
+        reviewEl.style.display = 'flex';
+        reviewEl.style.flexDirection = 'column';
+        reviewEl.style.gap = '0.5rem';
+        reviewEl.style.borderBottom = '1px solid var(--border-light)';
+        reviewEl.style.paddingBottom = '1.5rem';
+
+        // Remove bottom border from last element
+        if (index === reviews.length - 1) {
+          reviewEl.style.borderBottom = 'none';
+          reviewEl.style.paddingBottom = '0';
+        }
+
+        const sanitizeHTML = (str) => {
+          const temp = document.createElement('div');
+          temp.textContent = str;
+          return temp.innerHTML;
+        };
+
+        const safeProductName = sanitizeHTML(review.product_name);
+        const safeMessage = sanitizeHTML(review.message);
+        const safeAuthor = sanitizeHTML(review.reviewers_name);
+
+        reviewEl.innerHTML = `
+          <div class="review-product" style="font-size: 0.9rem; color: var(--text-secondary);">${safeProductName}</div>
+          <div class="review-message" style="font-size: 1rem; color: var(--text-primary); font-style: italic;">"${safeMessage}" – <span class="review-author" style="font-weight: normal; font-style: normal;">${safeAuthor}</span></div>
+          <div class="review-stars" style="color: var(--primary-color); font-size: 0.9rem;">${reviewStarsHtml}</div>
+        `;
+        reviewsList.appendChild(reviewEl);
+      });
+    }
 
     // Initialize image on load
     window.onload = function() {
