@@ -20,7 +20,7 @@ const SUPABASE_CHECKOUT_URL = 'https://alfszmccbxndsrronyfe.supabase.co/function
 const SUPABASE_CHECKOUT_TEST_URL = 'https://alfszmccbxndsrronyfe.supabase.co/functions/v1/create-checkout-test';
 
 // Function to add item to cart
-function addToCart(priceId, name, size, variation, displayPrice, imageUrl, isTest = false, customText = null) {
+function addToCart(productId, priceId, name, size, variation, displayPrice, imageUrl, isTest = false, customText = null) {
   if (!priceId) {
     console.error("No valid price ID found");
     return;
@@ -48,6 +48,7 @@ function addToCart(priceId, name, size, variation, displayPrice, imageUrl, isTes
   } else {
     // Add new item
     cart.push({
+      productId: productId,
       id: priceId,
       name: name,
       size: size,
@@ -145,15 +146,23 @@ function updateCartUI() {
         if(item.customText) metaParts.push(`"${escapeHTML(item.customText)}"`);
         const metaDisplay = metaParts.length > 0 ? `<div class="cart-item-meta">${metaParts.join(' / ')}</div>` : '';
 
+
+        let titleHtml = escapeHTML(item.name);
+        let imgHtml = `<img src="${thumbUrl}" alt="${item.name}" onerror="this.src=JB_LOADER_URI;" class="cart-item-img">`;
+        if (item.productId) {
+            titleHtml = `<a href="product.html?id=${item.productId}" style="color: inherit; text-decoration: none;">${escapeHTML(item.name)}</a>`;
+            imgHtml = `<a href="product.html?id=${item.productId}">${imgHtml}</a>`;
+        }
+
         itemEl.innerHTML = `
           <div class="cart-item-header">
-            <div class="cart-item-title">${escapeHTML(item.name)}</div>
+            <div class="cart-item-title">${titleHtml}</div>
             <button class="remove-item-btn" onclick="removeFromCart(${index})" aria-label="Remove item">
               <i class="fa-solid fa-trash"></i>
             </button>
           </div>
           <div class="cart-item-content">
-            <img src="${thumbUrl}" alt="${item.name}" onerror="this.src=JB_LOADER_URI;" class="cart-item-img">
+            ${imgHtml}
             <div class="cart-item-info">
               ${metaDisplay}
               <div class="cart-item-price">${item.displayPrice} x ${item.quantity}</div>
@@ -177,6 +186,38 @@ function updateCartUI() {
   if (checkoutBtn) {
     checkoutBtn.disabled = cart.length === 0;
   }
+
+  // Inject shipping info to footer
+  const cartFooter = document.querySelector('.cart-footer');
+  if (cartFooter) {
+    let shippingInfoEl = cartFooter.querySelector('.floating-shipping-info');
+    if (!shippingInfoEl) {
+      shippingInfoEl = document.createElement('div');
+      shippingInfoEl.className = 'floating-shipping-info';
+      shippingInfoEl.style.cssText = "font-size: 0.8rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.25rem; max-width: 60%;";
+      shippingInfoEl.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fa-solid fa-truck" style="color: var(--primary-color);"></i>
+            <span>Items typically ship within 2 weeks</span>
+        </div>
+        <button class="learnMoreShippingBtn" style="background: none; border: none; padding: 0; color: var(--secondary-color-2); text-decoration: underline; cursor: pointer; text-align: left; margin-left: 1.5rem; font-size: 0.75rem;">Learn More</button>
+      `;
+      // Insert before checkout button
+      cartFooter.insertBefore(shippingInfoEl, document.getElementById('checkoutBtn'));
+
+      // Ensure footer uses flexbox space-between
+      cartFooter.style.display = 'flex';
+      cartFooter.style.justifyContent = 'space-between';
+      cartFooter.style.alignItems = 'center';
+    }
+
+    if (cart.length === 0) {
+      shippingInfoEl.style.display = 'none';
+    } else {
+      shippingInfoEl.style.display = 'flex';
+    }
+  }
+
 }
 
 // Make globally available
@@ -249,6 +290,175 @@ document.addEventListener('DOMContentLoaded', () => {
     checkoutBtn.addEventListener('click', handleCheckout);
   }
 
+
+  // Sync legacy cart items that are missing productId
+  if (cart.some(item => !item.productId)) {
+    const fetchMissingProductIds = async () => {
+      let updated = false;
+      for (let i = 0; i < cart.length; i++) {
+        const item = cart[i];
+        if (!item.productId && item.id) {
+          try {
+            const tableName = item.isTest ? 'test_product' : 'product';
+            const { data, error } = await window.supabaseClient
+              .from(tableName)
+              .select('product_id')
+              .eq('stripe_price_id', item.id)
+              .single();
+
+            if (data && data.product_id) {
+              item.productId = data.product_id;
+              updated = true;
+            }
+          } catch (e) {
+            console.error('Error fetching missing product_id for cart item:', e);
+          }
+        }
+      }
+
+      if (updated) {
+        saveCart();
+        updateCartUI();
+        // If on the cart page, also update its UI
+        if (typeof renderCartPage === 'function') {
+          renderCartPage();
+        }
+      }
+    };
+
+    // Only attempt to fetch if supabaseClient is available
+    if (window.supabaseClient) {
+      fetchMissingProductIds();
+    }
+  }
+
   // Initial UI update
   updateCartUI();
+});
+
+
+
+// Inject Shipping Modal Styles
+if (!document.getElementById('shipping-modal-styles')) {
+  const styleEl = document.createElement('style');
+  styleEl.id = 'shipping-modal-styles';
+  styleEl.innerHTML = `
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 3000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+    }
+
+    .modal-content {
+      position: relative;
+      width: 50%;
+      max-width: 600px;
+      padding: 2.5rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+      background: var(--card-bg, #fff);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-light, #eee);
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: translateY(0);
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1.25rem;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .modal-close-btn:hover {
+      color: var(--primary-color);
+    }
+
+    @media (max-width: 900px) {
+      .modal-content {
+        width: 90%;
+        padding: 1.5rem;
+      }
+    }
+  `;
+  document.head.appendChild(styleEl);
+}
+
+// Inject Shipping Modal HTML if it doesn't exist
+if (!document.getElementById('shippingModal')) {
+  const modalHtml = `
+  <div id="shippingModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content bento-card">
+      <button class="modal-close-btn" id="closeShippingModalBtn" aria-label="Close Shipping Information">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <h3 style="color: var(--primary-color); margin-bottom: 1rem; margin-top: 0;">Shipping Information</h3>
+      <p style="font-size: 1rem; color: var(--text-primary); margin-bottom: 1rem;">
+        All orders* should be shipped within 2 weeks, though many will be shipped earlier. Most of our products are made to order and then shipped. Items may be made and shipped in a couple of days, but this can be limited by our current volume of orders. If you ordered a product and haven’t received a shipping confirmation within 2 weeks, please let us know!
+      </p>
+      <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0;">
+        *Please note that we currently don’t ship outside of the United States. If you are interested in ordering one of our products over seas, let’s <a href="contact.html" style="text-decoration: underline;">get in touch</a>.
+      </p>
+    </div>
+  </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+// Add event listeners for the modal globally
+document.addEventListener('click', (e) => {
+    if (e.target && e.target.classList.contains('learnMoreShippingBtn')) {
+        e.preventDefault();
+        const shippingModal = document.getElementById('shippingModal');
+        if (shippingModal) {
+            shippingModal.style.display = 'flex';
+            setTimeout(() => {
+                shippingModal.classList.add('active');
+            }, 10);
+        }
+    }
+});
+
+document.addEventListener('click', (e) => {
+    const closeBtn = document.getElementById('closeShippingModalBtn');
+    const shippingModal = document.getElementById('shippingModal');
+
+    if (e.target === closeBtn || closeBtn?.contains(e.target)) {
+        if (shippingModal) {
+            shippingModal.classList.remove('active');
+            setTimeout(() => {
+                shippingModal.style.display = 'none';
+            }, 300);
+        }
+    } else if (e.target === shippingModal) {
+        if (shippingModal) {
+            shippingModal.classList.remove('active');
+            setTimeout(() => {
+                shippingModal.style.display = 'none';
+            }, 300);
+        }
+    }
 });
