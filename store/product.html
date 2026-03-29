@@ -544,6 +544,11 @@
       <!-- Details Side -->
       <div class="product-details col-span-6 bento-card" style="overflow: visible;">
         <h1 class="product-title" id="productTitle">Loading...</h1>
+        <!-- Product Reviews Summary -->
+        <div id="productReviewSummary" style="display: none; align-items: center; gap: 0.5rem; margin-bottom: 1rem; color: var(--text-secondary);">
+          <div id="productReviewStars" style="color: var(--primary-color); font-size: 1.1rem;"></div>
+          <div id="productReviewCount" style="font-size: 0.95rem;"></div>
+        </div>
         <div class="product-price" id="priceDisplay">...</div>
 
         <!-- Dynamic Size Selection -->
@@ -596,6 +601,14 @@
         <p class="product-description" id="productDescription" style="margin-bottom: 0;">
           Loading product description...
         </p>
+      </div>
+
+      <!-- Product Reviews List -->
+      <div class="product-reviews-container col-span-12 bento-card" id="productReviewsContainer" style="display: none;">
+        <h2 class="section-title">Customer Reviews</h2>
+        <div id="productReviewsList" style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <!-- Reviews injected here -->
+        </div>
       </div>
 
     </div>
@@ -701,6 +714,66 @@
       if (pError || !products || products.length === 0) {
         document.getElementById('productPageContent').innerHTML = '<div style="padding: 2rem;">Product not found or error loading.</div>';
         return;
+      }
+
+      // Fetch Product Reviews
+      const { data: reviewsData, error: rError } = await window.supabaseClient
+        .from('reviews')
+        .select('*')
+        .eq('product_name', products[0].name)
+        .order('stars', { ascending: false });
+
+      if (!rError && reviewsData && reviewsData.length > 0) {
+        let totalStars = 0;
+        reviewsData.forEach(r => totalStars += (parseInt(r.stars) || 5));
+        const avgRating = totalStars / reviewsData.length;
+        // Round to nearest half
+        const roundedAvg = Math.ceil(avgRating * 2) / 2;
+
+        const summaryContainer = document.getElementById('productReviewSummary');
+        const starsContainer = document.getElementById('productReviewStars');
+        const countContainer = document.getElementById('productReviewCount');
+
+        let starsHtml = '';
+        for (let i = 1; i <= 5; i++) {
+          if (roundedAvg >= i) {
+            starsHtml += '<i class="fa-solid fa-star"></i>';
+          } else if (roundedAvg === i - 0.5) {
+            starsHtml += '<i class="fa-solid fa-star-half-stroke"></i>';
+          } else {
+            starsHtml += '<i class="fa-regular fa-star"></i>';
+          }
+        }
+        starsContainer.innerHTML = starsHtml;
+        countContainer.textContent = `(${reviewsData.length} review${reviewsData.length > 1 ? 's' : ''})`;
+        summaryContainer.style.display = 'flex';
+
+        // Populate Reviews List
+        const reviewsListContainer = document.getElementById('productReviewsContainer');
+        const reviewsList = document.getElementById('productReviewsList');
+        reviewsListContainer.style.display = 'block';
+
+        let listHtml = '';
+        reviewsData.forEach(r => {
+          let rStarsHtml = '';
+          const rStars = parseInt(r.stars) || 5;
+          for (let i = 1; i <= 5; i++) {
+            if (i <= rStars) {
+              rStarsHtml += '<i class="fa-solid fa-star"></i>';
+            } else {
+              rStarsHtml += '<i class="fa-regular fa-star"></i>';
+            }
+          }
+
+          listHtml += `
+            <div class="review-item" style="text-align: left; margin-bottom: 1.5rem;">
+              <div class="review-product" style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">${r.product_name}</div>
+              <div class="review-message" style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 0.5rem; font-style: italic;">"${r.message}" – ${r.reviewers_name}</div>
+              <div class="review-stars" style="color: var(--primary-color);">${rStarsHtml}</div>
+            </div>
+          `;
+        });
+        reviewsList.innerHTML = listHtml;
       }
 
       // Fetch Product Media
