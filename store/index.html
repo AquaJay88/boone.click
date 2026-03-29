@@ -193,6 +193,37 @@
         margin-top: 0.5rem;
       }
     }
+
+    .review-dot {
+      width: 10px;
+      height: 10px;
+      background-color: var(--border-color);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .review-dot.active {
+      background-color: var(--primary-color);
+    }
+    .review-message {
+      font-size: 1.1rem;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+      font-style: italic;
+    }
+    .review-author {
+      font-weight: bold;
+      color: var(--text-primary);
+    }
+    .review-product {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+    .review-stars {
+      color: var(--primary-color);
+      margin-bottom: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -337,6 +368,18 @@
 
       <!-- Products will be injected here -->
 
+
+    </div>
+
+    <!-- Reviews Component -->
+    <div id="reviewsContainer" class="bento-card" style="margin-top: 2rem; display: none; padding: 2rem; position: relative;">
+      <h2 style="text-align: center; margin-bottom: 1.5rem; color: var(--text-primary);">What people are saying</h2>
+      <div id="reviewContent" style="min-height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+        <!-- Review details injected here -->
+      </div>
+      <div id="reviewDots" style="display: flex; justify-content: center; margin-top: 1.5rem; gap: 0.5rem;">
+        <!-- Dots injected here -->
+      </div>
     </div>
 
   </div>
@@ -394,6 +437,21 @@
       const isTest = urlParams.get('test') === 'true';
 
       // Fetch products from Supabase
+
+      // Fetch reviews from Supabase
+      async function fetchReviews() {
+        const { data: reviews, error: reviewsError } = await window.supabaseClient
+          .from('reviews')
+          .select('*')
+          .eq('home_page', true);
+
+        if (reviewsError) {
+          console.error('Error fetching reviews:', reviewsError);
+          return [];
+        }
+        return reviews;
+      }
+
       async function fetchProducts() {
         const tableName = isTest ? 'test_product' : 'product';
         const { data: products, error: productsError } = await window.supabaseClient
@@ -550,10 +608,101 @@
         renderProducts(filteredCatalog);
       }
 
+
+      // Reviews Logic
+      let reviewsData = [];
+      let currentReviewIndex = 0;
+      let reviewInterval;
+      let reviewTimeout;
+
+      async function initReviews() {
+        reviewsData = await fetchReviews();
+        const reviewsContainer = document.getElementById('reviewsContainer');
+        const reviewContent = document.getElementById('reviewContent');
+        const reviewDots = document.getElementById('reviewDots');
+
+        if (!reviewsData || reviewsData.length === 0) {
+          reviewsContainer.style.display = 'none';
+          return;
+        }
+
+        reviewsContainer.style.display = 'block';
+
+        // Create dots
+        reviewDots.innerHTML = '';
+        reviewsData.forEach((_, index) => {
+          const dot = document.createElement('div');
+          dot.classList.add('review-dot');
+          if (index === 0) dot.classList.add('active');
+          dot.addEventListener('click', () => {
+            selectReview(index);
+          });
+          reviewDots.appendChild(dot);
+        });
+
+        renderReview(0);
+        startReviewInterval();
+      }
+
+      function renderReview(index) {
+        if (!reviewsData[index]) return;
+        const review = reviewsData[index];
+        const reviewContent = document.getElementById('reviewContent');
+        const reviewDots = document.getElementById('reviewDots');
+
+        // Stars HTML
+        let starsHtml = '';
+        const starCount = parseInt(review.stars) || 5;
+        for (let i = 0; i < 5; i++) {
+          if (i < starCount) {
+            starsHtml += '<i class="fa-solid fa-star"></i>';
+          } else {
+            starsHtml += '<i class="fa-regular fa-star"></i>';
+          }
+        }
+
+        reviewContent.innerHTML = `
+          <div class="review-stars">${starsHtml}</div>
+          <div class="review-message">"${review.message}"</div>
+          <div class="review-author">Name: ${review.reviewers_name}</div>
+          <div class="review-product">Product: ${review.product_name}</div>
+        `;
+
+        // Update dots
+        Array.from(reviewDots.children).forEach((dot, idx) => {
+          if (idx === index) {
+            dot.classList.add('active');
+          } else {
+            dot.classList.remove('active');
+          }
+        });
+      }
+
+      function startReviewInterval() {
+        clearInterval(reviewInterval);
+        reviewInterval = setInterval(() => {
+          currentReviewIndex = (currentReviewIndex + 1) % reviewsData.length;
+          renderReview(currentReviewIndex);
+        }, 15000); // 15 seconds
+      }
+
+      function selectReview(index) {
+        currentReviewIndex = index;
+        renderReview(currentReviewIndex);
+
+        // Pause and restart interval
+        clearInterval(reviewInterval);
+        clearTimeout(reviewTimeout);
+        reviewTimeout = setTimeout(() => {
+          startReviewInterval();
+        }, 30000); // 30 seconds pause on interaction
+      }
+
       // Initial Render
       productsData = await fetchProducts();
       generateFilters();
       updateDisplay();
+      initReviews();
 
       const searchWrapper = document.querySelector('.search-wrapper');
 
