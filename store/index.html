@@ -662,10 +662,9 @@
         }
 
         reviewContent.innerHTML = `
+          <div class="review-product">${review.product_name}</div>
+          <div class="review-message">"${review.message}" – ${review.reviewers_name}</div>
           <div class="review-stars">${starsHtml}</div>
-          <div class="review-message">"${review.message}"</div>
-          <div class="review-author">Name: ${review.reviewers_name}</div>
-          <div class="review-product">Product: ${review.product_name}</div>
         `;
 
         // Update dots
