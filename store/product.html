@@ -1109,6 +1109,7 @@
       const imageUrl = defaultImg ? defaultImg.image_url : '';
 
       window.addToCart(
+         productData[0].product_id,
          state.priceId,
          productName,
          state.sizeVal !== 'default' ? state.sizeVal : '',
