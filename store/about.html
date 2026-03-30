@@ -8,6 +8,19 @@
   <!-- Include a lightweight icon set -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="cart.js" type="text/javascript"></script>
+
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+  <!-- Three.js Import Map -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
 </head>
 <body>
 
@@ -91,7 +104,7 @@
       <section class="hero container" style="display: block;">
         <div class="hero-text-grid">
           <div class="hero-text base-text hero-layout-wrap">
-            <img src="../John Boone Suit (no background).png" alt="John Boone" class="hero-portrait-float">
+            <canvas id="hero-canvas" class="hero-portrait-float" style="aspect-ratio: 3/4;"></canvas>
             <h1>About JB <span class="craftsman-font">Craftsman</span></h1>
             <span class="tagline">Crafting quality with intention.</span>
 
@@ -117,32 +130,6 @@
               <p>JB Craftsman is for the organizers, the optimizers, and anyone who appreciates a product that does exactly what it says it will do. I’m glad you’re here, and I hope these designs help you find a little more efficiency in your own world.</p>
             </div>
           </div>
-          <div class="hero-text masked-text hero-layout-wrap" aria-hidden="true">
-            <img src="../John Boone Suit (no background).png" alt="" class="hero-portrait-float" style="opacity: 0;">
-            <h1>About JB <span class="craftsman-font">Craftsman</span></h1>
-            <span class="tagline">Crafting quality with intention.</span>
-
-            <div class="hero-text-content">
-              <p><b><span style="color: var(--primary-color);">Our Philosophy</span><span style="color: var(--primary-color);">: Beyond "Good Enough"</span></b></p>
-              <p>Each of our products started as a frustration. Whether it’s a cluttered game box or a struggling event setup, I’ve always been driven by one question: How can I make this better? I don't believe in "one size fits all" solutions that only get the job done halfway. I believe in maximizing the potential of every object we use daily.</p>
-            </div>
-
-            <div class="hero-text-content">
-              <p><b><span style="color: var(--primary-color);">The Origin Story</span><span style="color: var(--primary-color);">: The Search for a Better Sign</span></b></p>
-              <p>My journey into intentional design began with a simple problem at work. We hosted frequent vegetarian receptions and were relying on messy chalkboard signs. I needed a way to clearly communicate if a dish was also vegan, gluten-Free, or both. All while setting up in the final, frantic minutes before an event.</p>
-              <p>The options I found online were either overpriced or didn't fit our specific needs. So, I decided to build something that worked for us. I designed our Vegetarian Table Signs to be adaptable, compact for travel, and instantly readable. That project ignited a passion for not settling with something that was 'good enough', but creating something better.</p>
-            </div>
-
-            <div class="hero-text-content">
-              <p><b><span style="color: var(--primary-color);">The Process</span><span style="color: var(--primary-color);">: Where Intentionality Meets Precision</span></b></p>
-              <p>While the heavy lifting and finishing touches happen in my workshop, the "soul" of the design happens at my dining room table. While listening to a good playlist and petting my adorable dog, I spend hours sketching and iterating on ideas.</p>
-              <p>I utilize 3D printing as my primary tool for one specific reason: it allows me to tailor a design to fit an exact need with a high level of intentionality. From that first layer to the final hand-finished product, the goal is always the same. To crafting something that makes day-to-day life run a little smoother.</p>
-            </div>
-
-            <div class="hero-text-content">
-              <p><b><span style="color: var(--primary-color);">Built for the Efficient Life</span></b></p>
-              <p>JB Craftsman is for the organizers, the optimizers, and anyone who appreciates a product that does exactly what it says it will do. I’m glad you’re here, and I hope these designs help you find a little more efficiency in your own world.</p>
-            </div>
           </div>
         </div>
       </section>
@@ -154,6 +141,9 @@
     <a href="about.html" class="btn btn-secondary" style="display: inline-block;">Learn about my small business</a>
   </footer>
 </div> <!-- End of .main-content-wrapper -->
+
+  <!-- 3D Animation Script -->
+  <script type="module" src="about-3d.js"></script>
 
   <!-- Floating Cart Menu -->
   <div class="floating-cart" id="floatingCartMenu">
