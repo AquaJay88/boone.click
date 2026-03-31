@@ -162,7 +162,7 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
     opacity: 0
   };
 
-  hubMesh.material = new THREE.MeshPhysicalMaterial({ color: 0x2a2a2a, ...plaSettings }); // Graphite grey
+  hubMesh.material = new THREE.MeshPhysicalMaterial({ color: 0x3a3a3a, ...plaSettings }); // Slightly lighter graphite grey
   railsMesh.material = new THREE.MeshPhysicalMaterial({ color: 0xcccccc, ...plaSettings });
 
   // Group ties into clusters of 3
@@ -219,6 +219,11 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
 
   trainMesh.removeFromParent(); // Remove original
 
+  // Calculate local center of the train geometry to ensure accurate distance checks later
+  trainMesh.geometry.computeBoundingBox();
+  const trainLocalCenter = new THREE.Vector3();
+  trainMesh.geometry.boundingBox.getCenter(trainLocalCenter);
+
   for (let i = 0; i < 8; i++) {
     const clonedTrain = trainMesh.clone();
     clonedTrain.material = new THREE.MeshPhysicalMaterial({ color: trainColors[i], ...plaSettings });
@@ -231,7 +236,7 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
     pivot.add(clonedTrain);
 
     model.add(pivot); // Add to model so it inherits 1000x scale and centering
-    trains.push({ pivot, mesh: clonedTrain });
+    trains.push({ pivot, mesh: clonedTrain, localCenter: trainLocalCenter });
   }
 
   // Add glowing neon-blue GridHelper to the floor
@@ -322,7 +327,9 @@ window.addEventListener('resize', () => {
 // --- Phase 2: Interactive Hover Wave ---
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2(-1000, -1000); // Start offscreen
-const invisiblePlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+
+// Use a mathematical plane at y=0 to allow smooth hover across gaps between the tracks
+const hoverPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 const hoverPoint = new THREE.Vector3();
 
 let isHovering = false;
@@ -334,8 +341,16 @@ canvas.addEventListener('mousemove', (event) => {
   mouse.y = -((event.clientY - rect.top) / canvas.clientHeight) * 2 + 1;
 
   raycaster.setFromCamera(mouse, camera);
-  raycaster.ray.intersectPlane(invisiblePlane, hoverPoint);
-  isHovering = true;
+
+  const target = new THREE.Vector3();
+  const intersect = raycaster.ray.intersectPlane(hoverPlane, target);
+
+  if (intersect) {
+    hoverPoint.copy(target);
+    isHovering = true;
+  } else {
+    isHovering = false;
+  }
 });
 
 canvas.addEventListener('mouseleave', () => {
@@ -365,11 +380,14 @@ function updateWave() {
     let targetY = baseY;
 
     if (isHovering) {
-      const pos = new THREE.Vector3();
-      firstBody.getWorldPosition(pos); // Get world pos for distance calculation
+      // Calculate world position accurately by updating matrixWorld
+      firstBody.updateMatrixWorld(true);
+      const e = firstBody.matrixWorld.elements;
+      const wx = e[12];
+      const wz = e[14];
 
-      const dx = pos.x - hoverPoint.x;
-      const dz = pos.z - hoverPoint.z;
+      const dx = wx - hoverPoint.x;
+      const dz = wz - hoverPoint.z;
       const dist = Math.sqrt(dx * dx + dz * dz);
 
       if (dist < waveRadius) {
@@ -397,8 +415,10 @@ function updateWave() {
     let targetY = baseY;
 
     if (isHovering) {
-      const pos = new THREE.Vector3();
-      mesh.getWorldPosition(pos);
+      // Calculate world position based on the geometry's local visual center,
+      // because the mesh's origin is 0,0,0 (pivot center).
+      const pos = t.localCenter.clone();
+      mesh.localToWorld(pos);
 
       const dx = pos.x - hoverPoint.x;
       const dz = pos.z - hoverPoint.z;
