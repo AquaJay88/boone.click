@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
 const canvas = document.getElementById('hero-canvas');
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 2000);
-camera.position.set(0, 150, 300);
+camera.position.set(0, 125, 250); // Moved camera closer by ~20% (150->125, 300->250)
 camera.lookAt(0, 0, 0);
 
 const renderer = new THREE.WebGLRenderer({
@@ -17,6 +18,8 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
 
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
 scene.add(ambientLight);
@@ -24,6 +27,12 @@ scene.add(ambientLight);
 const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
 dirLight.position.set(5, 10, 5);
 scene.add(dirLight);
+
+const rgbeLoader = new RGBELoader();
+rgbeLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/equirectangular/royal_esplanade_1k.hdr', function(texture) {
+  texture.mapping = THREE.EquirectangularReflectionMapping;
+  scene.environment = texture;
+});
 
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
@@ -143,8 +152,18 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
   bodies.forEach(b => model.add(b));
 
   // Process Hub & Rails
-  hubMesh.material = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8, transparent: true, opacity: 0 });
-  railsMesh.material = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.8, transparent: true, opacity: 0 });
+  // Simulate PLA plastic
+  const plaSettings = {
+    roughness: 0.4,
+    metalness: 0.1,
+    clearcoat: 0.1,
+    clearcoatRoughness: 0.2,
+    transparent: true,
+    opacity: 0
+  };
+
+  hubMesh.material = new THREE.MeshPhysicalMaterial({ color: 0x2a2a2a, ...plaSettings }); // Graphite grey
+  railsMesh.material = new THREE.MeshPhysicalMaterial({ color: 0xcccccc, ...plaSettings });
 
   // Group ties into clusters of 3
   const ties = [];
@@ -178,23 +197,23 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
 
     // Apply material to all
     cluster.forEach(m => {
-      m.material = new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.9, transparent: true, opacity: 0 });
+      m.material = new THREE.MeshPhysicalMaterial({ color: 0x8b4513, ...plaSettings });
     });
 
     ties.push(cluster);
   }
 
   // Duplicate train 8 times
-  // Solid colors matching domino trains
+  // Hex colors provided in the PR
   const trainColors = [
-    0xe60000, // Red
-    0x0033cc, // Blue
-    0xffcc00, // Yellow
-    0x009933, // Green
-    0x800080, // Purple
-    0xff6600, // Orange
-    0x008080, // Teal
-    0x000080  // Dark Blue
+    0xBB3D43,
+    0xF7D959,
+    0xFFFFFF,
+    0xF99963,
+    0xAE96D4,
+    0x0078BF,
+    0x61C680,
+    0x4D3324
   ];
   const trains = [];
 
@@ -202,7 +221,7 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
 
   for (let i = 0; i < 8; i++) {
     const clonedTrain = trainMesh.clone();
-    clonedTrain.material = new THREE.MeshStandardMaterial({ color: trainColors[i], roughness: 0.6, transparent: true, opacity: 0 });
+    clonedTrain.material = new THREE.MeshPhysicalMaterial({ color: trainColors[i], ...plaSettings });
 
     const pivot = new THREE.Group();
     // Maintain pivot at 0,0,0 relative to the scaled model space.
@@ -214,6 +233,13 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
     model.add(pivot); // Add to model so it inherits 1000x scale and centering
     trains.push({ pivot, mesh: clonedTrain });
   }
+
+  // Add glowing neon-blue GridHelper to the floor
+  const gridHelper = new THREE.GridHelper(2000, 100, 0x00ffff, 0x005555);
+  gridHelper.position.y = -50; // Position slightly below the model
+  gridHelper.material.transparent = true;
+  gridHelper.material.opacity = 1;
+  scene.add(gridHelper);
 
   // Create wireframes
   const allSolidMeshes = [hubMesh, railsMesh, ...bodies, ...trains.map(t => t.mesh)];
@@ -238,7 +264,7 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
     allSolidMeshes
   };
 
-  // Phase 1 animation: Blueprint crossfade
+  // Phase 1 animation: Staggered Blueprint assembly
   setTimeout(() => {
     const tl = gsap.timeline({
       onComplete: () => {
@@ -251,17 +277,33 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
       }
     });
 
-    tl.to(wireframes.map(w => w.material), {
-      opacity: 0,
-      duration: 2.5,
-      ease: 'power2.inOut'
-    }, 0);
+    // Group 1: Hub and Rails
+    const baseMeshes = [hubMesh, railsMesh];
+    const baseWireframes = wireframes.filter(wf => baseMeshes.includes(wf.parent));
 
-    tl.to(allSolidMeshes.map(m => m.material), {
-      opacity: 1,
-      duration: 2.5,
-      ease: 'power2.inOut'
-    }, 0);
+    // Group 2: Ties
+    const tieMeshes = bodies;
+    const tieWireframes = wireframes.filter(wf => tieMeshes.includes(wf.parent));
+
+    // Group 3: Trains
+    const trainMeshes = trains.map(t => t.mesh);
+    const trainWireframes = wireframes.filter(wf => trainMeshes.includes(wf.parent));
+
+    // Stagger 1: Base
+    tl.to(baseWireframes.map(w => w.material), { opacity: 0, duration: 1.5, ease: 'power2.inOut' }, 0);
+    tl.to(baseMeshes.map(m => m.material), { opacity: 1, duration: 1.5, ease: 'power2.inOut' }, 0);
+
+    // Stagger 2: Ties
+    tl.to(tieWireframes.map(w => w.material), { opacity: 0, duration: 1.5, ease: 'power2.inOut' }, 0.5);
+    tl.to(tieMeshes.map(m => m.material), { opacity: 1, duration: 1.5, ease: 'power2.inOut' }, 0.5);
+
+    // Stagger 3: Trains
+    tl.to(trainWireframes.map(w => w.material), { opacity: 0, duration: 1.5, ease: 'power2.inOut' }, 1.0);
+    tl.to(trainMeshes.map(m => m.material), { opacity: 1, duration: 1.5, ease: 'power2.inOut' }, 1.0);
+
+    // Fade out GridHelper after all solid-color animations complete
+    tl.to(gridHelper.material, { opacity: 0, duration: 1.5, ease: 'power2.inOut' }, 2.5);
+
   }, 1000); // 1s delay before starting fade
 
 
@@ -304,12 +346,11 @@ function updateWave() {
   if (!modelLoaded || !window.animationData) return;
 
   const { ties, trains } = window.animationData;
-  const waveRadius = 150;
+  // Reduce wave radius to strictly "3 ties out" (roughly 50-60 units in world space depending on scale, tuned visually)
+  const waveRadius = 55;
 
-  // maxLift must be smaller since it is added to the mesh's local space position.y
-  // but evaluated in world space, OR we apply local lift relative to local maxLift.
-  // The model is scaled by 1000, so a 30 unit lift in world space is 30 / 1000 = 0.03 in local space.
-  const localMaxLift = 30 / 1000;
+  // maxLift reduced to 35% of 30 (10.5)
+  const localMaxLift = 10.5 / 1000;
 
   // Update ties
   ties.forEach(cluster => {

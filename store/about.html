@@ -67,15 +67,19 @@
           z-index: 10;
         }
 
-        .hero-portrait-float {
+        .canvas-container {
           float: right;
           width: 400px;
           max-width: 40%;
           margin-left: 2rem;
           margin-bottom: 2rem;
-          /* Allow text to wrap closely to the transparent image pixels */
-          shape-outside: url('../John Boone Suit (no background).png');
-          shape-margin: 20px;
+          position: relative;
+          z-index: -1;
+        }
+
+        .hero-portrait-float {
+          width: 100%;
+          height: auto;
           /* Visual shadow for depth */
           filter: drop-shadow(0 15px 25px rgba(0,0,0,0.25));
         }
@@ -89,9 +93,14 @@
         }
 
         @media (max-width: 900px) {
-          .hero-portrait-float {
-            display: none;
+          .canvas-container {
+            float: none;
+            display: block;
+            margin: 0 auto 2rem auto;
+            max-width: 100%;
+            z-index: 1;
           }
+
           .hero-text,
           .hero-text h1,
           .hero-text .tagline,
@@ -104,9 +113,12 @@
       <section class="hero container" style="display: block;">
         <div class="hero-text-grid">
           <div class="hero-text base-text hero-layout-wrap">
-            <canvas id="hero-canvas" class="hero-portrait-float" style="aspect-ratio: 3/4;"></canvas>
             <h1>About JB <span class="craftsman-font">Craftsman</span></h1>
             <span class="tagline">Crafting quality with intention.</span>
+
+            <div class="canvas-container">
+              <canvas id="hero-canvas" class="hero-portrait-float" style="aspect-ratio: 3/4;"></canvas>
+            </div>
 
             <div class="hero-text-content">
               <p><b><span style="color: var(--primary-color);">Our Philosophy</span><span style="color: var(--text-secondary);">: Beyond "Good Enough"</span></b></p>
