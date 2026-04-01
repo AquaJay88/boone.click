@@ -239,12 +239,64 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
     trains.push({ pivot, mesh: clonedTrain, localCenter: trainLocalCenter });
   }
 
-  // Add glowing neon-blue GridHelper to the floor
-  const gridHelper = new THREE.GridHelper(2000, 100, 0x00ffff, 0x005555);
-  gridHelper.position.y = -50; // Position slightly below the model
-  gridHelper.material.transparent = true;
-  gridHelper.material.opacity = 1;
-  scene.add(gridHelper);
+  // Create an invisible Torus Hit Box
+  const pathRadius = Math.sqrt(trainLocalCenter.x * trainLocalCenter.x + trainLocalCenter.z * trainLocalCenter.z);
+  // Tube radius should be wide enough to cover the tracks and gaps, roughly 40 units
+  const torusGeom = new THREE.TorusGeometry(pathRadius, 40, 8, 32);
+  // Rotate torus to lay flat
+  torusGeom.rotateX(Math.PI / 2);
+  // Create material that is invisible
+  const torusMat = new THREE.MeshBasicMaterial({ visible: false });
+  const torusHitBox = new THREE.Mesh(torusGeom, torusMat);
+  // Align it with the model's Y center
+  torusHitBox.position.y = trainLocalCenter.y;
+  model.add(torusHitBox);
+
+  // Soft Blueprint Grid using a CanvasTexture
+  const canvasTexture = document.createElement('canvas');
+  canvasTexture.width = 512;
+  canvasTexture.height = 512;
+  const ctx = canvasTexture.getContext('2d');
+
+  // Background
+  ctx.fillStyle = 'rgba(0, 0, 0, 0)'; // transparent
+  ctx.fillRect(0, 0, 512, 512);
+
+  // Draw soft grid lines
+  ctx.strokeStyle = 'rgba(100, 200, 255, 0.4)'; // soft blue
+  ctx.lineWidth = 2;
+
+  // Create a grid pattern
+  const step = 64;
+  for (let i = 0; i <= 512; i += step) {
+    ctx.beginPath();
+    ctx.moveTo(i, 0);
+    ctx.lineTo(i, 512);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0, i);
+    ctx.lineTo(512, i);
+    ctx.stroke();
+  }
+
+  const gridTex = new THREE.CanvasTexture(canvasTexture);
+  gridTex.wrapS = THREE.RepeatWrapping;
+  gridTex.wrapT = THREE.RepeatWrapping;
+  gridTex.repeat.set(10, 10);
+
+  const gridGeom = new THREE.PlaneGeometry(2000, 2000);
+  const gridMat = new THREE.MeshBasicMaterial({
+    map: gridTex,
+    transparent: true,
+    opacity: 0, // start at 0 for animation
+    depthWrite: false
+  });
+
+  const softGrid = new THREE.Mesh(gridGeom, gridMat);
+  softGrid.rotation.x = -Math.PI / 2;
+  softGrid.position.y = -50; // slightly below model
+  scene.add(softGrid);
 
   // Create wireframes
   const allSolidMeshes = [hubMesh, railsMesh, ...bodies, ...trains.map(t => t.mesh)];
@@ -261,15 +313,26 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
   scene.add(model);
   modelLoaded = true;
 
+  const interactableObjects = [torusHitBox];
+  console.log('Interactable objects length:', interactableObjects.length);
+  // Log the number of individual meshes from trains and ties to show we have everything captured logically,
+  // even if raycaster now hits the torus.
+  console.log('Total train meshes:', trains.length);
+  console.log('Total tie bodies:', bodies.length);
+
   // Expose useful arrays globally for phase 2
   window.animationData = {
     ties,
     trains,
     wireframes,
-    allSolidMeshes
+    allSolidMeshes,
+    interactableObjects
   };
 
   // Phase 1 animation: Staggered Blueprint assembly
+  // First fade in the grid smoothly, then hold, then run the assembly
+  gsap.to(softGrid.material, { opacity: 1, duration: 1, ease: 'power1.inOut' });
+
   setTimeout(() => {
     const tl = gsap.timeline({
       onComplete: () => {
@@ -307,7 +370,7 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
     tl.to(trainMeshes.map(m => m.material), { opacity: 1, duration: 1.5, ease: 'power2.inOut' }, 1.0);
 
     // Fade out GridHelper after all solid-color animations complete
-    tl.to(gridHelper.material, { opacity: 0, duration: 1.5, ease: 'power2.inOut' }, 2.5);
+    tl.to(softGrid.material, { opacity: 0, duration: 1.5, ease: 'power2.inOut' }, 2.5);
 
   }, 1000); // 1s delay before starting fade
 
@@ -328,8 +391,6 @@ window.addEventListener('resize', () => {
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2(-1000, -1000); // Start offscreen
 
-// Use a mathematical plane at y=0 to allow smooth hover across gaps between the tracks
-const hoverPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 const hoverPoint = new THREE.Vector3();
 
 let isHovering = false;
@@ -342,14 +403,14 @@ canvas.addEventListener('mousemove', (event) => {
 
   raycaster.setFromCamera(mouse, camera);
 
-  const target = new THREE.Vector3();
-  const intersect = raycaster.ray.intersectPlane(hoverPlane, target);
-
-  if (intersect) {
-    hoverPoint.copy(target);
-    isHovering = true;
-  } else {
-    isHovering = false;
+  if (window.animationData && window.animationData.interactableObjects) {
+    const intersects = raycaster.intersectObjects(window.animationData.interactableObjects, false);
+    if (intersects.length > 0) {
+      hoverPoint.copy(intersects[0].point);
+      isHovering = true;
+    } else {
+      isHovering = false;
+    }
   }
 });
 
