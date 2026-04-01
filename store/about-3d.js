@@ -241,8 +241,9 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
 
   // Create an invisible Torus Hit Box
   const pathRadius = Math.sqrt(trainLocalCenter.x * trainLocalCenter.x + trainLocalCenter.z * trainLocalCenter.z);
-  // Tube radius should be wide enough to cover the tracks and gaps, roughly 40 units
-  const torusGeom = new THREE.TorusGeometry(pathRadius, 40, 8, 32);
+  // Tube radius should be wide enough to cover the tracks and gaps, roughly 40 units in world space.
+  // Since we are adding it to 'model' which has a scale of 1000x, we divide by 1000.
+  const torusGeom = new THREE.TorusGeometry(pathRadius, 40 / 1000, 8, 32);
   // Rotate torus to lay flat
   torusGeom.rotateX(Math.PI / 2);
   // Create material that is invisible

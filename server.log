@@ -149,3 +149,9 @@
 127.0.0.1 - - [01/Apr/2026 13:14:42] "GET /store/about-3d.js HTTP/1.1" 200 -
 127.0.0.1 - - [01/Apr/2026 13:14:42] "GET /images/JB%20Red.png HTTP/1.1" 200 -
 127.0.0.1 - - [01/Apr/2026 13:14:43] "GET /store/images/Train%20Case%20&%20Hub%20Animation.glb HTTP/1.1" 200 -
+127.0.0.1 - - [01/Apr/2026 23:30:52] "GET /store/about.html HTTP/1.1" 200 -
+127.0.0.1 - - [01/Apr/2026 23:30:53] "GET /store/cart.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Apr/2026 23:30:53] "GET /css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [01/Apr/2026 23:30:53] "GET /images/JB%20Red.png HTTP/1.1" 200 -
+127.0.0.1 - - [01/Apr/2026 23:30:53] "GET /store/about-3d.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Apr/2026 23:30:53] "GET /store/images/Train%20Case%20&%20Hub%20Animation.glb HTTP/1.1" 200 -
