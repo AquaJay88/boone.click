@@ -244,11 +244,11 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
   // Tube radius should be wide enough to cover the tracks and gaps, roughly 40 units in world space.
   // Since we are adding it to 'model' which has a scale of 1000x, we divide by 1000.
   const torusGeom = new THREE.TorusGeometry(pathRadius, 40 / 1000, 8, 32);
-  // Rotate torus to lay flat
-  torusGeom.rotateX(Math.PI / 2);
   // Create material that is invisible
   const torusMat = new THREE.MeshBasicMaterial({ visible: false });
   const torusHitBox = new THREE.Mesh(torusGeom, torusMat);
+  // Rotate torus to lay flat
+  torusHitBox.rotation.x = -Math.PI / 2;
   // Align it with the model's Y center
   torusHitBox.position.y = trainLocalCenter.y;
   model.add(torusHitBox);
@@ -423,8 +423,8 @@ function updateWave() {
   if (!modelLoaded || !window.animationData) return;
 
   const { ties, trains } = window.animationData;
-  // Increase wave radius to encompass the hovered train plus at least 2 adjacent train slots
-  const waveRadius = 350;
+  // Reduce MAX_RADIUS so it only covers ~1/4 to 1/3 of the track's total circumference
+  const waveRadius = 130;
 
   // maxLift reduced to 35% of 30 (10.5)
   const localMaxLift = 10.5 / 1000;
