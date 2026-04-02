@@ -239,19 +239,18 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
     trains.push({ pivot, mesh: clonedTrain, localCenter: trainLocalCenter });
   }
 
-  // Create an invisible Torus Hit Box
+  // Create an invisible Cylinder Hit Box (a "puck") to capture hover anywhere over the entire model
   const pathRadius = Math.sqrt(trainLocalCenter.x * trainLocalCenter.x + trainLocalCenter.z * trainLocalCenter.z);
-  // Tube radius should be wide enough to cover the tracks and gaps, roughly 40 units in world space.
-  // Since we are adding it to 'model' which has a scale of 1000x, we divide by 1000.
-  const torusGeom = new THREE.TorusGeometry(pathRadius, 40 / 1000, 8, 32);
-  // Create material that is invisible
-  const torusMat = new THREE.MeshBasicMaterial({ visible: false });
-  const torusHitBox = new THREE.Mesh(torusGeom, torusMat);
-  // Rotate torus to lay flat
-  torusHitBox.rotation.x = -Math.PI / 2;
-  // Align it with the model's Y center
-  torusHitBox.position.y = trainLocalCenter.y;
-  model.add(torusHitBox);
+  // Cylinder radius should cover the tracks plus some padding.
+  // Since model is scaled 1000x, we add padding in local space (e.g. 40 / 1000).
+  const hitBoxRadius = pathRadius + (40 / 1000);
+  const hitBoxHeight = 100 / 1000;
+
+  const cylinderGeom = new THREE.CylinderGeometry(hitBoxRadius, hitBoxRadius, hitBoxHeight, 32);
+  const hitBoxMat = new THREE.MeshBasicMaterial({ visible: false });
+  const modelHitBox = new THREE.Mesh(cylinderGeom, hitBoxMat);
+  modelHitBox.position.y = trainLocalCenter.y;
+  model.add(modelHitBox);
 
   // Soft Blueprint Grid using a CanvasTexture
   const canvasTexture = document.createElement('canvas');
@@ -314,7 +313,7 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
   scene.add(model);
   modelLoaded = true;
 
-  const interactableObjects = [torusHitBox];
+  const interactableObjects = [modelHitBox];
   console.log('Interactable objects length:', interactableObjects.length);
   // Log the number of individual meshes from trains and ties to show we have everything captured logically,
   // even if raycaster now hits the torus.
@@ -423,8 +422,8 @@ function updateWave() {
   if (!modelLoaded || !window.animationData) return;
 
   const { ties, trains } = window.animationData;
-  // Reduce MAX_RADIUS so it only covers ~1/4 to 1/3 of the track's total circumference
-  const waveRadius = 130;
+  // Reduce wave radius to strictly cover the hovered train + ~3 items left/right
+  const waveRadius = 65;
 
   // maxLift reduced to 35% of 30 (10.5)
   const localMaxLift = 10.5 / 1000;
