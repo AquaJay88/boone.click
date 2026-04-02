@@ -399,8 +399,8 @@ const initialY = new Map();
 
 canvas.addEventListener('mousemove', (event) => {
   const rect = canvas.getBoundingClientRect();
-  mouse.x = ((event.clientX - rect.left) / canvas.clientWidth) * 2 - 1;
-  mouse.y = -((event.clientY - rect.top) / canvas.clientHeight) * 2 + 1;
+  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
   raycaster.setFromCamera(mouse, camera);
 
@@ -423,8 +423,8 @@ function updateWave() {
   if (!modelLoaded || !window.animationData) return;
 
   const { ties, trains } = window.animationData;
-  // Reduce wave radius to strictly "3 ties out" (roughly 50-60 units in world space depending on scale, tuned visually)
-  const waveRadius = 55;
+  // Increase wave radius to encompass the hovered train plus at least 2 adjacent train slots
+  const waveRadius = 350;
 
   // maxLift reduced to 35% of 30 (10.5)
   const localMaxLift = 10.5 / 1000;
@@ -453,8 +453,8 @@ function updateWave() {
       const dist = Math.sqrt(dx * dx + dz * dz);
 
       if (dist < waveRadius) {
-        // Bell curve wave in world distance, but calculating local lift
-        const lift = Math.pow(Math.cos((dist / waveRadius) * (Math.PI / 2)), 2) * localMaxLift;
+        // Smooth interpolation using linear taper as requested
+        const lift = Math.max(0, 1 - dist / waveRadius) * localMaxLift;
         targetY = baseY + lift;
       }
     }
@@ -487,7 +487,8 @@ function updateWave() {
       const dist = Math.sqrt(dx * dx + dz * dz);
 
       if (dist < waveRadius) {
-        const lift = Math.pow(Math.cos((dist / waveRadius) * (Math.PI / 2)), 2) * localMaxLift;
+        // Smooth interpolation using linear taper as requested
+        const lift = Math.max(0, 1 - dist / waveRadius) * localMaxLift;
         targetY = baseY + lift;
       }
     }
