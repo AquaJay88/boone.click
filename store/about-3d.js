@@ -239,16 +239,17 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
     trains.push({ pivot, mesh: clonedTrain, localCenter: trainLocalCenter });
   }
 
-  // Create an invisible Cylinder Hit Box (a "puck") to capture hover anywhere over the entire model
+  // Create an invisible flat Circle Hit Box to capture hover anywhere over the entire model
   const pathRadius = Math.sqrt(trainLocalCenter.x * trainLocalCenter.x + trainLocalCenter.z * trainLocalCenter.z);
-  // Cylinder radius should cover the tracks plus some padding.
+  // Circle radius should cover the tracks plus some padding.
   // Since model is scaled 1000x, we add padding in local space (e.g. 40 / 1000).
   const hitBoxRadius = pathRadius + (40 / 1000);
-  const hitBoxHeight = 100 / 1000;
 
-  const cylinderGeom = new THREE.CylinderGeometry(hitBoxRadius, hitBoxRadius, hitBoxHeight, 32);
-  const hitBoxMat = new THREE.MeshBasicMaterial({ visible: false });
-  const modelHitBox = new THREE.Mesh(cylinderGeom, hitBoxMat);
+  // Use a perfectly flat geometry to prevent vertical 3D interception issues with the raycaster
+  const circleGeom = new THREE.CircleGeometry(hitBoxRadius, 32);
+  const hitBoxMat = new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide });
+  const modelHitBox = new THREE.Mesh(circleGeom, hitBoxMat);
+  modelHitBox.rotation.x = -Math.PI / 2; // Lay perfectly flat
   modelHitBox.position.y = trainLocalCenter.y;
   model.add(modelHitBox);
 
