@@ -8,6 +8,19 @@
   <!-- Include a lightweight icon set -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="cart.js" type="text/javascript"></script>
+
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+  <!-- Three.js Import Map -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
 </head>
 <body>
 
@@ -54,15 +67,19 @@
           z-index: 10;
         }
 
-        .hero-portrait-float {
+        .canvas-container {
           float: right;
           width: 400px;
           max-width: 40%;
           margin-left: 2rem;
           margin-bottom: 2rem;
-          /* Allow text to wrap closely to the transparent image pixels */
-          shape-outside: url('../John Boone Suit (no background).png');
-          shape-margin: 20px;
+          position: relative;
+          z-index: -1;
+        }
+
+        .hero-portrait-float {
+          width: 100%;
+          height: auto;
           /* Visual shadow for depth */
           filter: drop-shadow(0 15px 25px rgba(0,0,0,0.25));
         }
@@ -76,9 +93,14 @@
         }
 
         @media (max-width: 900px) {
-          .hero-portrait-float {
-            display: none;
+          .canvas-container {
+            float: none;
+            display: block;
+            margin: 0 auto 2rem auto;
+            max-width: 100%;
+            z-index: 1;
           }
+
           .hero-text,
           .hero-text h1,
           .hero-text .tagline,
@@ -91,9 +113,12 @@
       <section class="hero container" style="display: block;">
         <div class="hero-text-grid">
           <div class="hero-text base-text hero-layout-wrap">
-            <img src="../John Boone Suit (no background).png" alt="John Boone" class="hero-portrait-float">
             <h1>About JB <span class="craftsman-font">Craftsman</span></h1>
             <span class="tagline">Crafting quality with intention.</span>
+
+            <div class="canvas-container">
+              <canvas id="hero-canvas" class="hero-portrait-float" style="aspect-ratio: 3/4;"></canvas>
+            </div>
 
             <div class="hero-text-content">
               <p><b><span style="color: var(--primary-color);">Our Philosophy</span><span style="color: var(--text-secondary);">: Beyond "Good Enough"</span></b></p>
@@ -154,6 +179,9 @@
     <a href="about.html" class="btn btn-secondary" style="display: inline-block;">Learn about my small business</a>
   </footer>
 </div> <!-- End of .main-content-wrapper -->
+
+  <!-- 3D Animation Script -->
+  <script type="module" src="about-3d.js"></script>
 
   <!-- Floating Cart Menu -->
   <div class="floating-cart" id="floatingCartMenu">
