@@ -437,9 +437,16 @@ canvas.addEventListener('mousemove', (event) => {
   raycaster.setFromCamera(mouse, camera);
 
   if (window.animationData && window.animationData.interactableObjects) {
+    // 1. First verify if the mouse is hovering over the 3D proxy volume (the cylinder)
+    // This allows hovering anywhere on the visible model without dead zones.
     const intersects = raycaster.intersectObjects(window.animationData.interactableObjects, false);
+
     if (intersects.length > 0) {
-      hoverPoint.copy(intersects[0].point);
+      // 2. The cylinder intercept could be on its top or side, which distorts the X/Z radial
+      // distances because of the camera angle. To get the TRUE 2D coordinate on the track plane,
+      // we project the ray down to the Y=0 plane (where the trains sit).
+      const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+      raycaster.ray.intersectPlane(groundPlane, hoverPoint);
       isHovering = true;
     } else {
       isHovering = false;
