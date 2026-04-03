@@ -6,7 +6,8 @@ import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 const canvas = document.getElementById('hero-canvas');
 const scene = new THREE.Scene();
 
-const camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 2000);
+const rect = canvas.getBoundingClientRect();
+const camera = new THREE.PerspectiveCamera(45, rect.width / rect.height, 0.1, 2000);
 camera.position.set(0, 125, 250); // Moved camera closer by ~20% (150->125, 300->250)
 camera.lookAt(0, 0, 0);
 
@@ -15,7 +16,7 @@ const renderer = new THREE.WebGLRenderer({
   alpha: true,
   antialias: true,
 });
-renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+renderer.setSize(rect.width, rect.height, false);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -239,14 +240,6 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
     trains.push({ pivot, mesh: clonedTrain, localCenter: trainLocalCenter });
   }
 
-  // Create an invisible 3D Cylinder Hit Box to capture hover anywhere over the entire model
-  // This bounds the model from the bottom of the black hub to the top of the trains
-  const pathRadius = Math.sqrt(trainLocalCenter.x * trainLocalCenter.x + trainLocalCenter.z * trainLocalCenter.z);
-  // Cylinder radius should cover the tracks plus some padding.
-  // Since model is scaled 1000x, we add padding in local space (e.g. 40 / 1000).
-  const hitBoxRadius = pathRadius + (40 / 1000);
-
-  // No proxy hit box is needed! We will directly raycast against all visual meshes.
   // Soft Blueprint Grid using a CanvasTexture
   const canvasTexture = document.createElement('canvas');
   canvasTexture.width = 512;
@@ -308,21 +301,12 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
   scene.add(model);
   modelLoaded = true;
 
-  // Direct mesh intersection ensures exact visual accuracy with no dead zones and perfect targeting
-  const interactableObjects = allSolidMeshes;
-  console.log('Interactable objects length:', interactableObjects.length);
-  // Log the number of individual meshes from trains and ties to show we have everything captured logically,
-  // even if raycaster now hits the torus.
-  console.log('Total train meshes:', trains.length);
-  console.log('Total tie bodies:', bodies.length);
-
   // Expose useful arrays globally for phase 2
   window.animationData = {
     ties,
     trains,
     wireframes,
-    allSolidMeshes,
-    interactableObjects
+    allSolidMeshes
   };
 
   // Phase 1 animation: Staggered Blueprint assembly
@@ -377,60 +361,49 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
 
 // Resize handler
 window.addEventListener('resize', () => {
-  camera.aspect = canvas.clientWidth / canvas.clientHeight;
+  const rect = canvas.getBoundingClientRect();
+  camera.aspect = rect.width / rect.height;
   camera.updateProjectionMatrix();
-  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+  renderer.setSize(rect.width, rect.height, false);
 });
 
 
 // --- Phase 2: Interactive Hover Wave ---
-const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2(-1000, -1000); // Start offscreen
-
-const hoverPoint = new THREE.Vector3();
-
 let isHovering = false;
 const initialY = new Map();
 
-canvas.addEventListener('mousemove', (event) => {
+window.addEventListener('mousemove', (event) => {
   const rect = canvas.getBoundingClientRect();
-  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-  raycaster.setFromCamera(mouse, camera);
+  // Check if mouse is actually over the canvas area visually
+  const isOverCanvas = (
+    event.clientX >= rect.left &&
+    event.clientX <= rect.right &&
+    event.clientY >= rect.top &&
+    event.clientY <= rect.bottom
+  );
 
-  if (window.animationData) {
-    // A single, infinite, invisible flat plane at Y=0 provides perfectly smooth, continuous
-    // hover tracking across the entire 3D space, regardless of physical gaps in the model
-    // or tall camera angles. The wave's internal `waveRadius` automatically handles fading
-    // out the animation naturally as the mouse moves away from the trains.
-    const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-    const planeIntersect = new THREE.Vector3();
-
-    if (raycaster.ray.intersectPlane(groundPlane, planeIntersect)) {
-      hoverPoint.copy(planeIntersect);
-      // We are ALWAYS tracking the hover state smoothly against the invisible plane.
-      // The `updateWave` function will dynamically apply the distance math to whatever train/tie is closest!
-      isHovering = true;
-    } else {
-      isHovering = false;
-    }
+  if (isOverCanvas) {
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    isHovering = true;
+  } else {
+    isHovering = false;
   }
-});
-
-canvas.addEventListener('mouseleave', () => {
-  isHovering = false;
 });
 
 function updateWave() {
   if (!modelLoaded || !window.animationData) return;
 
   const { ties, trains } = window.animationData;
-  // Reduce wave radius to strictly cover the hovered train + ~3 items left/right
-  const waveRadius = 65;
+  // Convert wave radius to 2D normalized device coordinates (NDC space is -1 to 1)
+  const waveRadiusNDC = 0.2;
 
   // maxLift reduced to 35% of 30 (10.5)
   const localMaxLift = 10.5 / 1000;
+
+  const tempPos = new THREE.Vector3();
 
   // Update ties
   ties.forEach(cluster => {
@@ -448,16 +421,18 @@ function updateWave() {
       // Calculate world position accurately by updating matrixWorld
       firstBody.updateMatrixWorld(true);
       const e = firstBody.matrixWorld.elements;
-      const wx = e[12];
-      const wz = e[14];
+      tempPos.set(e[12], e[13], e[14]);
 
-      const dx = wx - hoverPoint.x;
-      const dz = wz - hoverPoint.z;
-      const dist = Math.sqrt(dx * dx + dz * dz);
+      // Project to 2D Normalized Device Coordinates (NDC)
+      tempPos.project(camera);
 
-      if (dist < waveRadius) {
+      const dx = tempPos.x - mouse.x;
+      const dy = tempPos.y - mouse.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < waveRadiusNDC) {
         // Smooth interpolation using linear taper as requested
-        const lift = Math.max(0, 1 - dist / waveRadius) * localMaxLift;
+        const lift = Math.max(0, 1 - dist / waveRadiusNDC) * localMaxLift;
         targetY = baseY + lift;
       }
     }
@@ -482,16 +457,19 @@ function updateWave() {
     if (isHovering) {
       // Calculate world position based on the geometry's local visual center,
       // because the mesh's origin is 0,0,0 (pivot center).
-      const pos = t.localCenter.clone();
-      mesh.localToWorld(pos);
+      tempPos.copy(t.localCenter);
+      mesh.localToWorld(tempPos);
 
-      const dx = pos.x - hoverPoint.x;
-      const dz = pos.z - hoverPoint.z;
-      const dist = Math.sqrt(dx * dx + dz * dz);
+      // Project to 2D Normalized Device Coordinates (NDC)
+      tempPos.project(camera);
 
-      if (dist < waveRadius) {
+      const dx = tempPos.x - mouse.x;
+      const dy = tempPos.y - mouse.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < waveRadiusNDC) {
         // Smooth interpolation using linear taper as requested
-        const lift = Math.max(0, 1 - dist / waveRadius) * localMaxLift;
+        const lift = Math.max(0, 1 - dist / waveRadiusNDC) * localMaxLift;
         targetY = baseY + lift;
       }
     }
