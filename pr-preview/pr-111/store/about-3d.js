@@ -373,15 +373,24 @@ const mouse = new THREE.Vector2(-1000, -1000); // Start offscreen
 let isHovering = false;
 const initialY = new Map();
 
-canvas.addEventListener('mousemove', (event) => {
+window.addEventListener('mousemove', (event) => {
   const rect = canvas.getBoundingClientRect();
-  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-  isHovering = true;
-});
 
-canvas.addEventListener('mouseleave', () => {
-  isHovering = false;
+  // Check if mouse is actually over the canvas area visually
+  const isOverCanvas = (
+    event.clientX >= rect.left &&
+    event.clientX <= rect.right &&
+    event.clientY >= rect.top &&
+    event.clientY <= rect.bottom
+  );
+
+  if (isOverCanvas) {
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    isHovering = true;
+  } else {
+    isHovering = false;
+  }
 });
 
 function updateWave() {
@@ -389,7 +398,7 @@ function updateWave() {
 
   const { ties, trains } = window.animationData;
   // Convert wave radius to 2D normalized device coordinates (NDC space is -1 to 1)
-  const waveRadiusNDC = 0.4;
+  const waveRadiusNDC = 0.2;
 
   // maxLift reduced to 35% of 30 (10.5)
   const localMaxLift = 10.5 / 1000;
