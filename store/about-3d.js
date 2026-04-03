@@ -246,19 +246,40 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
   // Since model is scaled 1000x, we add padding in local space (e.g. 40 / 1000).
   const hitBoxRadius = pathRadius + (40 / 1000);
 
-  // Calculate vertical bounds of the model to determine cylinder height and position
-  const hubBox = new THREE.Box3().setFromObject(hubMesh);
-  const trainBox = new THREE.Box3().setFromObject(trainMesh);
+  // Calculate vertical bounds of the model to determine cylinder height and position.
+  // Since we scale the model by 1000 later, and the geometry bounding box is local,
+  // we compute bounding box strictly from local geometries to get the correct
+  // untransformed height and center.
+  hubMesh.geometry.computeBoundingBox();
+  trainMesh.geometry.computeBoundingBox();
 
-  // Convert world bounds back to local space relative to the model scale
-  const localMinY = hubBox.min.y / 1000;
-  const localMaxY = trainBox.max.y / 1000;
+  const localMinY = hubMesh.geometry.boundingBox.min.y;
 
-  const hitBoxHeight = localMaxY - localMinY;
-  const hitBoxCenterY = (localMaxY + localMinY) / 2;
+  // The train mesh is inside a pivot, and its geometry was centered previously via localCenter,
+  // but to be safe we can just calculate the max Y by taking the local center Y + the train's half-height,
+  // or simply use the raw geometry bounding box max Y before it was moved.
+  const localMaxY = trainMesh.geometry.boundingBox.max.y;
+
+  // To ensure we definitely cover the top and bottom, we just use the original geometries' extents.
+  // Wait, train geometry might be offset relative to hub geometry.
+  // We can just create a bounding box of the entire UN-SCALED model!
+  const fullBox = new THREE.Box3().setFromObject(model);
+  // FullBox is currently scaled 1000x and positioned.
+  // Let's divide by 1000 to get the local height.
+  // Because model.position.sub(center) moved the model bounds in world space,
+  // we just calculate the full scale-independent box.
+  const hitBoxHeight = (fullBox.max.y - fullBox.min.y) / 1000;
+
+  // The cylinder is added to `model`. Since `model` was re-centered using its own bounding box center,
+  // the center of the local Y bounds relative to the model pivot is exactly 0.
+  const hitBoxCenterY = 0;
+
+  // We should also increase the padding on the height slightly so it fully encapsulates the top of the trains
+  // and bottom of the base, adding 10% padding (0.1 in local scale).
+  const paddedHitBoxHeight = hitBoxHeight * 1.1;
 
   // Use a CylinderGeometry instead of a flat Circle to prevent dead zones on the vertical axis
-  const cylinderGeom = new THREE.CylinderGeometry(hitBoxRadius, hitBoxRadius, hitBoxHeight, 32);
+  const cylinderGeom = new THREE.CylinderGeometry(hitBoxRadius, hitBoxRadius, paddedHitBoxHeight, 32);
   const hitBoxMat = new THREE.MeshBasicMaterial({ visible: false });
   const modelHitBox = new THREE.Mesh(cylinderGeom, hitBoxMat);
   modelHitBox.position.y = hitBoxCenterY;
