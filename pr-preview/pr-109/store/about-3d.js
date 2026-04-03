@@ -399,26 +399,32 @@ canvas.addEventListener('mousemove', (event) => {
 
   raycaster.setFromCamera(mouse, camera);
 
-  if (window.animationData) {
-    // To ensure perfect, glitch-free activation anywhere over the model's footprint,
-    // we use a mathematical distance check from the center point (0,0,0) on the Y=0 plane.
-    const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-    const planeIntersect = new THREE.Vector3();
+  if (window.animationData && window.animationData.interactableObjects) {
+    // 1. First, check if the user is pointing exactly at a solid visual mesh (train, tie, hub).
+    // This provides perfect 3D accuracy without perspective skew.
+    const intersects = raycaster.intersectObjects(window.animationData.interactableObjects, false);
 
-    if (raycaster.ray.intersectPlane(groundPlane, planeIntersect)) {
-      // The track's radius is roughly 80 (since we calculated pathRadius + 40/1000 earlier which was ~80)
-      // We will activate the hover if the mouse's projected point is within an 85 unit radius from center.
-      // This creates a perfect smooth bounding area that matches the trains perfectly regardless of gaps.
-      const distFromCenter = Math.sqrt(planeIntersect.x * planeIntersect.x + planeIntersect.z * planeIntersect.z);
+    if (intersects.length > 0) {
+      hoverPoint.copy(intersects[0].point);
+      isHovering = true;
+    } else {
+      // 2. If the user points at a physical gap (e.g. between tracks), the raycaster misses the meshes.
+      // To prevent a "glitchy" dead zone, we cast the ray down to the Y=0 ground plane as a fallback.
+      const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+      const planeIntersect = new THREE.Vector3();
 
-      if (distFromCenter <= 90) { // 90 covers the outer edges of the hub and trains
-        hoverPoint.copy(planeIntersect);
-        isHovering = true;
+      if (raycaster.ray.intersectPlane(groundPlane, planeIntersect)) {
+        // Only activate if this gap intersection is within the model's footprint radius (~55 units)
+        const distFromCenter = Math.sqrt(planeIntersect.x * planeIntersect.x + planeIntersect.z * planeIntersect.z);
+        if (distFromCenter <= 55) {
+          hoverPoint.copy(planeIntersect);
+          isHovering = true;
+        } else {
+          isHovering = false;
+        }
       } else {
         isHovering = false;
       }
-    } else {
-      isHovering = false;
     }
   }
 });
