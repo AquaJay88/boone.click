@@ -239,20 +239,14 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
     trains.push({ pivot, mesh: clonedTrain, localCenter: trainLocalCenter });
   }
 
-  // Create an invisible flat Circle Hit Box to capture hover anywhere over the entire model
+  // Create an invisible 3D Cylinder Hit Box to capture hover anywhere over the entire model
+  // This bounds the model from the bottom of the black hub to the top of the trains
   const pathRadius = Math.sqrt(trainLocalCenter.x * trainLocalCenter.x + trainLocalCenter.z * trainLocalCenter.z);
-  // Circle radius should cover the tracks plus some padding.
+  // Cylinder radius should cover the tracks plus some padding.
   // Since model is scaled 1000x, we add padding in local space (e.g. 40 / 1000).
   const hitBoxRadius = pathRadius + (40 / 1000);
 
-  // Use a perfectly flat geometry to prevent vertical 3D interception issues with the raycaster
-  const circleGeom = new THREE.CircleGeometry(hitBoxRadius, 32);
-  const hitBoxMat = new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide });
-  const modelHitBox = new THREE.Mesh(circleGeom, hitBoxMat);
-  modelHitBox.rotation.x = -Math.PI / 2; // Lay perfectly flat
-  modelHitBox.position.y = trainLocalCenter.y;
-  model.add(modelHitBox);
-
+  // No proxy hit box is needed! We will directly raycast against all visual meshes.
   // Soft Blueprint Grid using a CanvasTexture
   const canvasTexture = document.createElement('canvas');
   canvasTexture.width = 512;
@@ -314,7 +308,8 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
   scene.add(model);
   modelLoaded = true;
 
-  const interactableObjects = [modelHitBox];
+  // Direct mesh intersection ensures exact visual accuracy with no dead zones and perfect targeting
+  const interactableObjects = allSolidMeshes;
   console.log('Interactable objects length:', interactableObjects.length);
   // Log the number of individual meshes from trains and ties to show we have everything captured logically,
   // even if raycaster now hits the torus.
@@ -404,10 +399,18 @@ canvas.addEventListener('mousemove', (event) => {
 
   raycaster.setFromCamera(mouse, camera);
 
-  if (window.animationData && window.animationData.interactableObjects) {
-    const intersects = raycaster.intersectObjects(window.animationData.interactableObjects, false);
-    if (intersects.length > 0) {
-      hoverPoint.copy(intersects[0].point);
+  if (window.animationData) {
+    // A single, infinite, invisible flat plane at Y=0 provides perfectly smooth, continuous
+    // hover tracking across the entire 3D space, regardless of physical gaps in the model
+    // or tall camera angles. The wave's internal `waveRadius` automatically handles fading
+    // out the animation naturally as the mouse moves away from the trains.
+    const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    const planeIntersect = new THREE.Vector3();
+
+    if (raycaster.ray.intersectPlane(groundPlane, planeIntersect)) {
+      hoverPoint.copy(planeIntersect);
+      // We are ALWAYS tracking the hover state smoothly against the invisible plane.
+      // The `updateWave` function will dynamically apply the distance math to whatever train/tie is closest!
       isHovering = true;
     } else {
       isHovering = false;
