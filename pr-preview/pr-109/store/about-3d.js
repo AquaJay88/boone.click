@@ -399,14 +399,24 @@ canvas.addEventListener('mousemove', (event) => {
 
   raycaster.setFromCamera(mouse, camera);
 
-  if (window.animationData && window.animationData.interactableObjects) {
-    // Raycast directly against all visible solid meshes
-    const intersects = raycaster.intersectObjects(window.animationData.interactableObjects, false);
+  if (window.animationData) {
+    // To ensure perfect, glitch-free activation anywhere over the model's footprint,
+    // we use a mathematical distance check from the center point (0,0,0) on the Y=0 plane.
+    const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    const planeIntersect = new THREE.Vector3();
 
-    if (intersects.length > 0) {
-      // Capture the exact 3D intersection point on the mesh for distance calculations
-      hoverPoint.copy(intersects[0].point);
-      isHovering = true;
+    if (raycaster.ray.intersectPlane(groundPlane, planeIntersect)) {
+      // The track's radius is roughly 80 (since we calculated pathRadius + 40/1000 earlier which was ~80)
+      // We will activate the hover if the mouse's projected point is within an 85 unit radius from center.
+      // This creates a perfect smooth bounding area that matches the trains perfectly regardless of gaps.
+      const distFromCenter = Math.sqrt(planeIntersect.x * planeIntersect.x + planeIntersect.z * planeIntersect.z);
+
+      if (distFromCenter <= 90) { // 90 covers the outer edges of the hub and trains
+        hoverPoint.copy(planeIntersect);
+        isHovering = true;
+      } else {
+        isHovering = false;
+      }
     } else {
       isHovering = false;
     }
