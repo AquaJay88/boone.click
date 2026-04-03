@@ -397,47 +397,24 @@ canvas.addEventListener('mousemove', (event) => {
   mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
   mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
+  raycaster.setFromCamera(mouse, camera);
+
   if (window.animationData) {
-    // We map the user's 2D screen coordinates directly to a flat, top-down 3D representation
-    // of the model, bypassing all 3D camera raycasting and perspective skew.
+    // A single, infinite, invisible flat plane at Y=0 provides perfectly smooth, continuous
+    // hover tracking across the entire 3D space, regardless of physical gaps in the model
+    // or tall camera angles. The wave's internal `waveRadius` automatically handles fading
+    // out the animation naturally as the mouse moves away from the trains.
+    const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    const planeIntersect = new THREE.Vector3();
 
-    // 1. Determine the true visual boundaries of the 3D model on the 2D screen.
-    // Because the camera is looking down at a 45-degree angle, a flat plane projection (y=0)
-    // cuts off the bottom half of the 3D base and the tall tops of the back trains.
-    // We must project the absolute lowest front edge (the bottom of the hub) to get the true Y radius!
-    const modelRadius = 55;
-
-    // The hub geometry's lowest local Y point is approx -20.65.
-    // We project the absolute front-bottom corner of the model to get the screen's bottom boundary.
-    const rightPoint = new THREE.Vector3(modelRadius, 0, 0).project(camera);
-    const frontBottomPoint = new THREE.Vector3(0, -21, modelRadius).project(camera);
-
-    const radiusX = Math.abs(rightPoint.x);
-    // Use the extreme front-bottom point to stretch the 2D screen oval over the entire visible height of the base.
-    const radiusY = Math.abs(frontBottomPoint.y);
-
-    // 2. Calculate how far the mouse is from the center (0,0) in percentage terms
-    const pctX = mouse.x / radiusX;
-    // Invert pctY: in NDC, negative Y is the bottom of the screen (which visually maps to the front of the model).
-    // In 3D space, the front of the model is positive Z.
-    const pctY = -mouse.y / radiusY;
-
-    // 3. Determine if the mouse is inside the ellipse boundary (x^2 + y^2 <= 1.0)
-    // We use 1.05 to give a 5% margin of leniency for clicking the very edges.
-    const normalizedDist = Math.sqrt(pctX * pctX + pctY * pctY);
-
-    if (normalizedDist <= 1.05) {
+    if (raycaster.ray.intersectPlane(groundPlane, planeIntersect)) {
+      hoverPoint.copy(planeIntersect);
+      // We are ALWAYS tracking the hover state smoothly against the invisible plane.
+      // The `updateWave` function will dynamically apply the distance math to whatever train/tie is closest!
       isHovering = true;
-      // 4. Translate the 2D percentage DIRECTLY into 3D world space!
-      // This completely ignores the actual visual height/perspective, treating the screen oval
-      // as a perfect 1:1 map of the flat Y=0 top-down plane.
-      hoverPoint.set(pctX * modelRadius, 0, pctY * modelRadius);
     } else {
       isHovering = false;
     }
-
-    // Attach to window so we can easily test the coordinates in verification scripts
-    window._debugHover = { pctX, pctY, normalizedDist, hoverPoint: {x: hoverPoint.x, y: hoverPoint.y, z: hoverPoint.z}, isHovering };
   }
 });
 
