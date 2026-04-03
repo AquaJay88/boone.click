@@ -239,18 +239,29 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
     trains.push({ pivot, mesh: clonedTrain, localCenter: trainLocalCenter });
   }
 
-  // Create an invisible flat Circle Hit Box to capture hover anywhere over the entire model
+  // Create an invisible 3D Cylinder Hit Box to capture hover anywhere over the entire model
+  // This bounds the model from the bottom of the black hub to the top of the trains
   const pathRadius = Math.sqrt(trainLocalCenter.x * trainLocalCenter.x + trainLocalCenter.z * trainLocalCenter.z);
-  // Circle radius should cover the tracks plus some padding.
+  // Cylinder radius should cover the tracks plus some padding.
   // Since model is scaled 1000x, we add padding in local space (e.g. 40 / 1000).
   const hitBoxRadius = pathRadius + (40 / 1000);
 
-  // Use a perfectly flat geometry to prevent vertical 3D interception issues with the raycaster
-  const circleGeom = new THREE.CircleGeometry(hitBoxRadius, 32);
-  const hitBoxMat = new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide });
-  const modelHitBox = new THREE.Mesh(circleGeom, hitBoxMat);
-  modelHitBox.rotation.x = -Math.PI / 2; // Lay perfectly flat
-  modelHitBox.position.y = trainLocalCenter.y;
+  // Calculate vertical bounds of the model to determine cylinder height and position
+  const hubBox = new THREE.Box3().setFromObject(hubMesh);
+  const trainBox = new THREE.Box3().setFromObject(trainMesh);
+
+  // Convert world bounds back to local space relative to the model scale
+  const localMinY = hubBox.min.y / 1000;
+  const localMaxY = trainBox.max.y / 1000;
+
+  const hitBoxHeight = localMaxY - localMinY;
+  const hitBoxCenterY = (localMaxY + localMinY) / 2;
+
+  // Use a CylinderGeometry instead of a flat Circle to prevent dead zones on the vertical axis
+  const cylinderGeom = new THREE.CylinderGeometry(hitBoxRadius, hitBoxRadius, hitBoxHeight, 32);
+  const hitBoxMat = new THREE.MeshBasicMaterial({ visible: false });
+  const modelHitBox = new THREE.Mesh(cylinderGeom, hitBoxMat);
+  modelHitBox.position.y = hitBoxCenterY;
   model.add(modelHitBox);
 
   // Soft Blueprint Grid using a CanvasTexture
