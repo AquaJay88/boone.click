@@ -246,12 +246,12 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
   canvasTexture.height = 512;
   const ctx = canvasTexture.getContext('2d');
 
-  // Background
-  ctx.fillStyle = 'rgba(0, 0, 0, 0)'; // transparent
+  // Background - #3057E1 Blueprint Paper
+  ctx.fillStyle = '#3057E1';
   ctx.fillRect(0, 0, 512, 512);
 
-  // Draw soft grid lines
-  ctx.strokeStyle = 'rgba(100, 200, 255, 0.4)'; // soft blue
+  // Draw soft grid lines - #002082
+  ctx.strokeStyle = '#002082';
   ctx.lineWidth = 2;
 
   // Create a grid pattern
@@ -286,16 +286,42 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
   softGrid.position.y = -50; // slightly below model
   scene.add(softGrid);
 
-  // Create wireframes
+  // Create wireframes with a sketched appearance
   const allSolidMeshes = [hubMesh, railsMesh, ...bodies, ...trains.map(t => t.mesh)];
   const wireframes = [];
 
   allSolidMeshes.forEach(mesh => {
     const wireframeGeom = new THREE.WireframeGeometry(mesh.geometry);
-    const wireframeMat = new THREE.LineBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 1 });
-    const wireframe = new THREE.LineSegments(wireframeGeom, wireframeMat);
-    mesh.add(wireframe);
-    wireframes.push(wireframe);
+
+    // To create a sketched look, we layer a few wireframes with slight random rotations/scales
+    // and lower opacity. #CED8F7 is the requested line color.
+    const sketchLayers = 3;
+    const sketchGroup = new THREE.Group();
+
+    for (let i = 0; i < sketchLayers; i++) {
+      const wireframeMat = new THREE.LineBasicMaterial({
+        color: 0xCED8F7,
+        transparent: true,
+        opacity: 0.6 // layer them to build up opacity
+      });
+      const wireframe = new THREE.LineSegments(wireframeGeom, wireframeMat);
+
+      if (i > 0) {
+        // Slight randomization for sketch effect
+        wireframe.rotation.set(
+          (Math.random() - 0.5) * 0.002,
+          (Math.random() - 0.5) * 0.002,
+          (Math.random() - 0.5) * 0.002
+        );
+        const scaleOffset = 1.0 + (Math.random() - 0.5) * 0.002;
+        wireframe.scale.set(scaleOffset, scaleOffset, scaleOffset);
+      }
+
+      sketchGroup.add(wireframe);
+      wireframes.push(wireframe);
+    }
+
+    mesh.add(sketchGroup);
   });
 
   scene.add(model);
