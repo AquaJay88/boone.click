@@ -271,9 +271,11 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
   const gridTex = new THREE.CanvasTexture(canvasTexture);
   gridTex.wrapS = THREE.RepeatWrapping;
   gridTex.wrapT = THREE.RepeatWrapping;
-  gridTex.repeat.set(10, 10);
+  // Shrink the repeated pattern so it fits tightly on the smaller plane
+  gridTex.repeat.set(3, 3);
 
-  const gridGeom = new THREE.PlaneGeometry(2000, 2000);
+  // Shrink the plane to fit the visible 3D model bounds
+  const gridGeom = new THREE.PlaneGeometry(300, 300);
   const gridMat = new THREE.MeshBasicMaterial({
     map: gridTex,
     transparent: true,
