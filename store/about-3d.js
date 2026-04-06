@@ -391,6 +391,46 @@ window.addEventListener('mousemove', (event) => {
   }
 });
 
+function checkWaveTrigger(xNDC, yNDC) {
+  if (!modelLoaded || !window.animationData) return false;
+
+  const { ties, trains } = window.animationData;
+  const waveRadiusNDC = 0.2;
+  const tempPos = new THREE.Vector3();
+
+  // Check ties
+  for (let i = 0; i < ties.length; i++) {
+    const firstBody = ties[i][0];
+    firstBody.updateMatrixWorld(true);
+    const e = firstBody.matrixWorld.elements;
+    tempPos.set(e[12], e[13], e[14]);
+    tempPos.project(camera);
+
+    const dx = tempPos.x - xNDC;
+    const dy = tempPos.y - yNDC;
+    if (Math.sqrt(dx * dx + dy * dy) < waveRadiusNDC) {
+      return true;
+    }
+  }
+
+  // Check trains
+  for (let i = 0; i < trains.length; i++) {
+    const t = trains[i];
+    t.mesh.updateMatrixWorld(true);
+    tempPos.copy(t.localCenter);
+    t.mesh.localToWorld(tempPos);
+    tempPos.project(camera);
+
+    const dx = tempPos.x - xNDC;
+    const dy = tempPos.y - yNDC;
+    if (Math.sqrt(dx * dx + dy * dy) < waveRadiusNDC) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function handleTouch(event) {
   if (event.touches.length > 0) {
     const touch = event.touches[0];
@@ -404,11 +444,17 @@ function handleTouch(event) {
     );
 
     if (isOverCanvas) {
-      if (event.cancelable) {
-        event.preventDefault();
+      const xNDC = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
+      const yNDC = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
+
+      if (checkWaveTrigger(xNDC, yNDC)) {
+        if (event.cancelable) {
+          event.preventDefault();
+        }
       }
-      mouse.x = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
+
+      mouse.x = xNDC;
+      mouse.y = yNDC;
       isHovering = true;
     } else {
       // If we move off the canvas, stop hovering
