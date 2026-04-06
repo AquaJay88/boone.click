@@ -153,12 +153,12 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
   bodies.forEach(b => model.add(b));
 
   // Process Hub & Rails
-  // Simulate PLA plastic
+  // Simulate PLA plastic (Matte Finish)
   const plaSettings = {
-    roughness: 0.4,
+    roughness: 0.8,
     metalness: 0.1,
-    clearcoat: 0.1,
-    clearcoatRoughness: 0.2,
+    clearcoat: 0.0,
+    clearcoatRoughness: 0.0,
     transparent: true,
     opacity: 0
   };
@@ -214,7 +214,7 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
     0xAE96D4,
     0x0078BF,
     0x61C680,
-    0x4D3324
+    0x8b4513
   ];
   const trains = [];
 
@@ -375,6 +375,26 @@ window.addEventListener('mousemove', (event) => {
   const rect = canvas.getBoundingClientRect();
 
   // Check if mouse is actually over the canvas area visually
+  const isOverCanvas = (
+    event.clientX >= rect.left &&
+    event.clientX <= rect.right &&
+    event.clientY >= rect.top &&
+    event.clientY <= rect.bottom
+  );
+
+  if (isOverCanvas) {
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    isHovering = true;
+  } else {
+    isHovering = false;
+  }
+});
+
+window.addEventListener('click', (event) => {
+  const rect = canvas.getBoundingClientRect();
+
+  // Check if click is actually over the canvas area visually
   const isOverCanvas = (
     event.clientX >= rect.left &&
     event.clientX <= rect.right &&
