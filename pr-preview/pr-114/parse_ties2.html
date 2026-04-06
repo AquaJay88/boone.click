@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+        "three/addons/utils/": "https://unpkg.com/three@0.160.0/examples/jsm/utils/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.setDRACOLoader(dracoLoader);
+
+    gltfLoader.load('/store/images/Train Case & Hub Animation.glb', (gltf) => {
+      let trainMesh = gltf.scene.children[2]; // Mesh 2 uses Material 2 (Train)
+
+      function countComponents(mesh) {
+        const geom = mesh.geometry;
+        const indices = geom.index.array;
+
+        const numVerts = geom.attributes.position.count;
+        const adj = new Array(numVerts).fill(null).map(() => []);
+        for(let i=0; i<indices.length; i+=3) {
+           const a = indices[i], b = indices[i+1], c = indices[i+2];
+           adj[a].push(b, c);
+           adj[b].push(a, c);
+           adj[c].push(a, b);
+        }
+
+        const visited = new Uint8Array(numVerts);
+        let comps = 0;
+        for(let i=0; i<numVerts; i++) {
+           if(!visited[i]) {
+              comps++;
+              const q = [i];
+              visited[i] = 1;
+              while(q.length > 0) {
+                 const curr = q.pop();
+                 const neighbors = adj[curr];
+                 for(let j=0; j<neighbors.length; j++) {
+                    const n = neighbors[j];
+                    if(!visited[n]) {
+                       visited[n] = 1;
+                       q.push(n);
+                    }
+                 }
+              }
+           }
+        }
+        return comps;
+      }
+      console.log('train components:', countComponents(trainMesh));
+
+    }, undefined, (err) => {
+      console.error(err);
+    });
+  </script>
+</body>
+</html>
