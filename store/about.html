@@ -104,10 +104,17 @@
 
           .canvas-container {
             float: none;
-            display: block;
+            display: flex;
+            justify-content: center;
             margin: 0 auto 2rem auto;
-            max-width: 100%;
+            width: 100%;
+            max-width: 400px;
             z-index: 1;
+          }
+
+          .canvas-container canvas, .canvas-container > div {
+             width: 100%;
+             max-width: 100%;
           }
 
           .hero-text,
@@ -115,6 +122,8 @@
           .hero-text .tagline,
           .hero-text-content p {
             text-align: left;
+            margin-left: 0;
+            margin-right: 0;
           }
         }
       </style>
@@ -154,6 +163,7 @@
           <div class="hero-text masked-text hero-layout-wrap" aria-hidden="true">
             <div class="canvas-container" style="opacity: 0;">
               <!-- Invisible spacer for the masked layer to keep everything aligned -->
+              <!-- Add max-width 40% and same margins as main canvas so they match perfectly -->
               <div style="aspect-ratio: 3/4; width: 100%;"></div>
             </div>
 

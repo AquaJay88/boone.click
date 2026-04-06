@@ -240,6 +240,14 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
     trains.push({ pivot, mesh: clonedTrain, localCenter: trainLocalCenter });
   }
 
+  // Re-calculate the exact bounding box of the entire model after adding all trains
+  const finalBox = new THREE.Box3().setFromObject(model);
+  const finalSize = new THREE.Vector3();
+  finalBox.getSize(finalSize);
+
+  // Use the maximum of width/depth to ensure a square grid that covers the model
+  const gridDim = Math.max(finalSize.x, finalSize.z);
+
   // Soft Blueprint Grid using a CanvasTexture
   const canvasTexture = document.createElement('canvas');
   canvasTexture.width = 512;
@@ -271,22 +279,12 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
   const gridTex = new THREE.CanvasTexture(canvasTexture);
   gridTex.wrapS = THREE.RepeatWrapping;
   gridTex.wrapT = THREE.RepeatWrapping;
-  // Shrink the repeated pattern so it fits tightly on the smaller plane
-  gridTex.repeat.set(3, 3);
 
-  // Shrink the plane to fit the visible 3D model bounds
-  const gridGeom = new THREE.PlaneGeometry(300, 300);
-  const gridMat = new THREE.MeshBasicMaterial({
-    map: gridTex,
-    transparent: true,
-    opacity: 0, // start at 0 for animation
-    depthWrite: false
-  });
+  // Adjust the repeat so the visual density is consistent.
+  const repeats = Math.max(1, Math.round(gridDim / 100));
+  gridTex.repeat.set(repeats, repeats);
 
-  const softGrid = new THREE.Mesh(gridGeom, gridMat);
-  softGrid.rotation.x = -Math.PI / 2;
-  softGrid.position.y = -50; // slightly below model
-  scene.add(softGrid);
+  // Background grid has been removed per user request
 
   // Create wireframes
   const allSolidMeshes = [hubMesh, railsMesh, ...bodies, ...trains.map(t => t.mesh)];
@@ -312,9 +310,7 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
   };
 
   // Phase 1 animation: Staggered Blueprint assembly
-  // First fade in the grid smoothly, then hold, then run the assembly
-  gsap.to(softGrid.material, { opacity: 1, duration: 1, ease: 'power1.inOut' });
-
+  // Start the assembly
   setTimeout(() => {
     const tl = gsap.timeline({
       onComplete: () => {
