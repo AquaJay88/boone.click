@@ -391,6 +391,46 @@ window.addEventListener('mousemove', (event) => {
   }
 });
 
+function handleTouch(event) {
+  if (event.touches.length > 0) {
+    const touch = event.touches[0];
+    const rect = canvas.getBoundingClientRect();
+
+    const isOverCanvas = (
+      touch.clientX >= rect.left &&
+      touch.clientX <= rect.right &&
+      touch.clientY >= rect.top &&
+      touch.clientY <= rect.bottom
+    );
+
+    if (isOverCanvas) {
+      if (event.cancelable) {
+        event.preventDefault();
+      }
+      mouse.x = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
+      isHovering = true;
+    } else {
+      // If we move off the canvas, stop hovering
+      isHovering = false;
+    }
+  }
+}
+
+window.addEventListener('touchstart', handleTouch, { passive: false });
+window.addEventListener('touchmove', handleTouch, { passive: false });
+window.addEventListener('touchend', (event) => {
+  // If there are no more touches, stop hovering
+  if (event.touches.length === 0) {
+    isHovering = false;
+  }
+});
+window.addEventListener('touchcancel', (event) => {
+  if (event.touches.length === 0) {
+    isHovering = false;
+  }
+});
+
 window.addEventListener('click', (event) => {
   const rect = canvas.getBoundingClientRect();
 
