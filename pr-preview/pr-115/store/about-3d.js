@@ -284,19 +284,7 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
   const repeats = Math.max(1, Math.round(gridDim / 100));
   gridTex.repeat.set(repeats, repeats);
 
-  // Shrink the plane to exactly fit the visible 3D model bounds
-  const gridGeom = new THREE.PlaneGeometry(gridDim, gridDim);
-  const gridMat = new THREE.MeshBasicMaterial({
-    map: gridTex,
-    transparent: true,
-    opacity: 0, // start at 0 for animation
-    depthWrite: false
-  });
-
-  const softGrid = new THREE.Mesh(gridGeom, gridMat);
-  softGrid.rotation.x = -Math.PI / 2;
-  softGrid.position.y = -50; // slightly below model
-  scene.add(softGrid);
+  // Background grid has been removed per user request
 
   // Create wireframes
   const allSolidMeshes = [hubMesh, railsMesh, ...bodies, ...trains.map(t => t.mesh)];
@@ -322,9 +310,7 @@ gltfLoader.load('images/Train Case & Hub Animation.glb', (gltf) => {
   };
 
   // Phase 1 animation: Staggered Blueprint assembly
-  // First fade in the grid smoothly, then hold, then run the assembly
-  gsap.to(softGrid.material, { opacity: 1, duration: 1, ease: 'power1.inOut' });
-
+  // Start the assembly
   setTimeout(() => {
     const tl = gsap.timeline({
       onComplete: () => {
