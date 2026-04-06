@@ -74,7 +74,7 @@
           margin-left: 2rem;
           margin-bottom: 2rem;
           position: relative;
-          z-index: -1;
+          z-index: 10;
         }
 
         .hero-portrait-float {
@@ -93,6 +93,15 @@
         }
 
         @media (max-width: 900px) {
+          .hero-layout-wrap {
+            display: flex;
+            flex-direction: column;
+          }
+          .hero-layout-wrap > h1 { order: 1; }
+          .hero-layout-wrap > .tagline { order: 2; margin-bottom: 2rem; }
+          .hero-layout-wrap > .canvas-container { order: 3; }
+          .hero-layout-wrap > .hero-text-content { order: 4; }
+
           .canvas-container {
             float: none;
             display: block;
@@ -113,12 +122,12 @@
       <section class="hero container" style="display: block;">
         <div class="hero-text-grid">
           <div class="hero-text base-text hero-layout-wrap">
-            <h1>About JB <span class="craftsman-font">Craftsman</span></h1>
-            <span class="tagline">Crafting quality with intention.</span>
-
             <div class="canvas-container">
               <canvas id="hero-canvas" class="hero-portrait-float" style="aspect-ratio: 3/4;"></canvas>
             </div>
+
+            <h1>About JB <span class="craftsman-font">Craftsman</span></h1>
+            <span class="tagline">Crafting quality with intention.</span>
 
             <div class="hero-text-content">
               <p><b><span style="color: var(--primary-color);">Our Philosophy</span><span style="color: var(--text-secondary);">: Beyond "Good Enough"</span></b></p>
@@ -143,7 +152,11 @@
             </div>
           </div>
           <div class="hero-text masked-text hero-layout-wrap" aria-hidden="true">
-            <img src="../John Boone Suit (no background).png" alt="" class="hero-portrait-float" style="opacity: 0;">
+            <div class="canvas-container" style="opacity: 0;">
+              <!-- Invisible spacer for the masked layer to keep everything aligned -->
+              <div style="aspect-ratio: 3/4; width: 100%;"></div>
+            </div>
+
             <h1>About JB <span class="craftsman-font">Craftsman</span></h1>
             <span class="tagline">Crafting quality with intention.</span>
 
