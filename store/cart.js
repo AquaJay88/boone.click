@@ -230,47 +230,10 @@ window.saveCart = saveCart;
 async function handleCheckout() {
   if (cart.length === 0) return;
 
-  const checkoutBtn = document.getElementById('checkoutBtn');
-  const originalText = checkoutBtn.innerHTML;
-  checkoutBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
-  checkoutBtn.disabled = true;
-
-  try {
-    // Check if there are any test items in the cart
-    const hasTestItems = cart.some(item => item.isTest);
-    const checkoutUrl = hasTestItems ? SUPABASE_CHECKOUT_TEST_URL : SUPABASE_CHECKOUT_URL;
-
-    // Call Supabase Edge Function
-    const response = await fetch(checkoutUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        items: cart,
-        successUrl: window.location.origin + '/store/success.html?session_id={CHECKOUT_SESSION_ID}',
-        cancelUrl: window.location.href, // Go back to the page they were on
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to create checkout session');
-    }
-
-    // Redirect to Stripe Checkout URL provided by Supabase
-    if (data.url) {
-      window.location.href = data.url;
-    } else {
-      throw new Error("Invalid response from checkout service.");
-    }
-  } catch (error) {
-    console.error("Checkout error:", error);
-    alert(error.message || "Something went wrong during checkout. Please try again.");
-    checkoutBtn.innerHTML = originalText;
-    checkoutBtn.disabled = false;
-  }
+  // Instead of creating the checkout session here,
+  // we redirect to our dedicated checkout page that will
+  // embed the Stripe UI and show the cart variations.
+  window.location.href = '/store/checkout.html';
 }
 
 // Initialize on DOM Load
@@ -408,25 +371,27 @@ if (!document.getElementById('shipping-modal-styles')) {
 }
 
 // Inject Shipping Modal HTML if it doesn't exist
-if (!document.getElementById('shippingModal')) {
-  const modalHtml = `
-  <div id="shippingModal" class="modal-overlay" style="display: none;">
-    <div class="modal-content bento-card">
-      <button class="modal-close-btn" id="closeShippingModalBtn" aria-label="Close Shipping Information">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-      <h3 style="color: var(--primary-color); margin-bottom: 1rem; margin-top: 0;">Shipping Information</h3>
-      <p style="font-size: 1rem; color: var(--text-primary); margin-bottom: 1rem;">
-        All orders* should be shipped within 2 weeks, though many will be shipped earlier. Most of our products are made to order and then shipped. Items may be made and shipped in a couple of days, but this can be limited by our current volume of orders. If you ordered a product and haven’t received a shipping confirmation within 2 weeks, please let us know!
-      </p>
-      <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0;">
-        *Please note that we currently don’t ship outside of the United States. If you are interested in ordering one of our products over seas, let’s <a href="contact.html" style="text-decoration: underline;">get in touch</a>.
-      </p>
-    </div>
-  </div>
-  `;
-  document.body.insertAdjacentHTML('beforeend', modalHtml);
-}
+document.addEventListener('DOMContentLoaded', () => {
+    if (!document.getElementById('shippingModal') && document.body) {
+      const modalHtml = `
+      <div id="shippingModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content bento-card">
+          <button class="modal-close-btn" id="closeShippingModalBtn" aria-label="Close Shipping Information">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+          <h3 style="color: var(--primary-color); margin-bottom: 1rem; margin-top: 0;">Shipping Information</h3>
+          <p style="font-size: 1rem; color: var(--text-primary); margin-bottom: 1rem;">
+            All orders* should be shipped within 2 weeks, though many will be shipped earlier. Most of our products are made to order and then shipped. Items may be made and shipped in a couple of days, but this can be limited by our current volume of orders. If you ordered a product and haven’t received a shipping confirmation within 2 weeks, please let us know!
+          </p>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0;">
+            *Please note that we currently don’t ship outside of the United States. If you are interested in ordering one of our products over seas, let’s <a href="contact.html" style="text-decoration: underline;">get in touch</a>.
+          </p>
+        </div>
+      </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+});
 
 // Add event listeners for the modal globally
 document.addEventListener('click', (e) => {
