@@ -148,7 +148,7 @@ function updateCartUI() {
 
 
         let titleHtml = escapeHTML(item.name);
-        let imgHtml = `<img src="${thumbUrl}" alt="${item.name}" onerror="this.src=JB_LOADER_URI;" class="cart-item-img">`;
+        let imgHtml = `<img src="${thumbUrl}" alt="${item.name}" onerror="this.src=''" class="cart-item-img">`;
         if (item.productId) {
             titleHtml = `<a href="product.html?id=${item.productId}" style="color: inherit; text-decoration: none;">${escapeHTML(item.name)}</a>`;
             imgHtml = `<a href="product.html?id=${item.productId}">${imgHtml}</a>`;
