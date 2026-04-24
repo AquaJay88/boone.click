@@ -92,7 +92,7 @@ serve(async (req) => {
     })
 
     // Return the generated session client_secret
-    return new Response(JSON.stringify({ client_secret: session.client_secret }), {
+    return new Response(JSON.stringify({ client_secret: session.client_secret, publishableKey: Deno.env.get('Stripe_Publishable_Key') }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })

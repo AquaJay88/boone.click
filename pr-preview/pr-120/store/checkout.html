@@ -221,12 +221,7 @@
 
 <script>
   // Render checkout order summary
-  var JB_LOADER_URI = "../images/loader.gif";
-  const escapeHTML = (str) => {
-    const p = document.createElement("p");
-    p.appendChild(document.createTextNode(str));
-    return p.innerHTML;
-  };
+
   function renderCheckoutPage() {
     const itemsContainer = document.getElementById('cartPageItems');
     const summaryContainer = document.getElementById('cartPageSummary');
@@ -243,7 +238,7 @@
     itemsContainer.innerHTML = '';
 
     currentCart.forEach((item, index) => {
-      const thumbUrl = item.imageUrl ? item.imageUrl : JB_LOADER_URI;
+      const thumbUrl = item.imageUrl ? item.imageUrl : "../images/loader.gif";
 
       const metaParts = [];
       if(item.size) metaParts.push(escapeHTML(item.size));
@@ -255,7 +250,7 @@
       itemEl.className = 'cart-page-item';
 
       let titleHtml = escapeHTML(item.name);
-      let imgHtml = `<img src="${thumbUrl}" alt="${item.name}" onerror="this.src=JB_LOADER_URI;" class="cart-page-item-img">`;
+      let imgHtml = `<img src="${thumbUrl}" alt="${item.name}" onerror="this.src='../images/loader.gif';" class="cart-page-item-img">`;
       if (item.productId) {
           titleHtml = `<a href="product.html?id=${item.productId}" style="color: inherit; text-decoration: none;">${escapeHTML(item.name)}</a>`;
           imgHtml = `<a href="product.html?id=${item.productId}">${imgHtml}</a>`;
@@ -290,14 +285,7 @@ console.log("initializeStripeCheckout called");
     const hasTestItems = currentCart.some(item => item.isTest);
     const SUPABASE_CHECKOUT_URL = 'https://alfszmccbxndsrronyfe.supabase.co/functions/v1/create-checkout';
     const SUPABASE_CHECKOUT_TEST_URL = 'https://alfszmccbxndsrronyfe.supabase.co/functions/v1/create-checkout-test';
-    const publishableKey = "pk_test_51TDC2lBA6S4OMIQxQJjaqJrlyCZF7U5FZHC8F6FRwvJlSOSA0K4SrZuYEz546ouV6V5ehxDEklTRbvZzpgcDK3Er00nBtr4SRw";
-    const testPublishableKey = "mk_1TDC2nBA6S4OMIQxSJkruEsC";
     const checkoutUrl = hasTestItems ? SUPABASE_CHECKOUT_TEST_URL : SUPABASE_CHECKOUT_URL;
-    const key = hasTestItems ? testPublishableKey : publishableKey;
-
-    console.log("initializing stripe...");
-    // Initialize stripe
-    const stripe = Stripe(key);
 
     try {
       const response = await fetch(checkoutUrl, {
@@ -318,6 +306,11 @@ console.log("initializeStripeCheckout called");
       }
 
       const clientSecret = data.client_secret;
+      const publishableKey = data.publishableKey;
+
+      console.log("initializing stripe...");
+      // Initialize stripe
+      const stripe = Stripe(publishableKey);
 
       const checkout = await stripe.initEmbeddedCheckout({
         clientSecret,
