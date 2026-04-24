@@ -29,7 +29,7 @@ serve(async (req) => {
     }
 
     // Parse the request body
-    const { items, cancelUrl, successUrl } = await req.json()
+    const { items, returnUrl } = await req.json()
 
     // Validate inputs
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -70,9 +70,13 @@ serve(async (req) => {
 
     // Set up the Checkout Session
     const session = await stripe.checkout.sessions.create({
+      ui_mode: 'embedded',
       payment_method_types: ['card'],
       line_items: line_items,
       mode: 'payment',
+      shipping_address_collection: {
+        allowed_countries: ['US'],
+      },
       shipping_options: [
         {
           shipping_rate: 'shr_1TFe8hBA6S4OMIQxytHowB6F',
@@ -84,12 +88,11 @@ serve(async (req) => {
       },
       metadata: metadata,
       // Redirect URLs back to your website
-      success_url: successUrl || `https://boone.click/store/success.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: cancelUrl || `https://boone.click/store/index.html`,
+      return_url: returnUrl || `https://boone.click/store/success.html?session_id={CHECKOUT_SESSION_ID}`,
     })
 
-    // Return the generated session URL
-    return new Response(JSON.stringify({ url: session.url }), {
+    // Return the generated session client_secret
+    return new Response(JSON.stringify({ client_secret: session.client_secret, publishableKey: Deno.env.get('Stripe_Publishable_Test_Key') }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
