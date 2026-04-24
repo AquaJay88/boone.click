@@ -293,18 +293,18 @@ console.log("initializeStripeCheckout called");
 
     try {
       if (window.supabaseClient) {
-        // Collect product IDs
-        const productIds = currentCart.map(item => item.productId).filter(Boolean);
-        const uniqueProductIds = [...new Set(productIds)];
+        // Collect price IDs
+        const priceIds = currentCart.map(item => item.id).filter(Boolean);
+        const uniquePriceIds = [...new Set(priceIds)];
 
-        if (uniqueProductIds.length > 0) {
+        if (uniquePriceIds.length > 0) {
           const productTable = hasTestItems ? 'test_product' : 'product';
 
           // Fetch products to get shipping column
           const { data: products, error: productError } = await window.supabaseClient
             .from(productTable)
-            .select('product_id, shipping')
-            .in('product_id', uniqueProductIds);
+            .select('stripe_price_id, shipping')
+            .in('stripe_price_id', uniquePriceIds);
 
           if (!productError && products && products.length > 0) {
             const shippingIds = products.map(p => p.shipping).filter(Boolean);
