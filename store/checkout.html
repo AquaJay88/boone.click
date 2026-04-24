@@ -303,8 +303,8 @@ console.log("initializeStripeCheckout called");
           // Fetch products to get shipping column
           const { data: products, error: productError } = await window.supabaseClient
             .from(productTable)
-            .select('id, shipping')
-            .in('id', uniqueProductIds);
+            .select('product_id, shipping')
+            .in('product_id', uniqueProductIds);
 
           if (!productError && products && products.length > 0) {
             const shippingIds = products.map(p => p.shipping).filter(Boolean);
