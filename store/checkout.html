@@ -287,16 +287,71 @@ console.log("initializeStripeCheckout called");
     const SUPABASE_CHECKOUT_TEST_URL = 'https://alfszmccbxndsrronyfe.supabase.co/functions/v1/create-checkout-test';
     const checkoutUrl = hasTestItems ? SUPABASE_CHECKOUT_TEST_URL : SUPABASE_CHECKOUT_URL;
 
+    // Calculate highest shipping rate
+    let maxShippingPrice = -1;
+    let maxShippingId = null;
+
     try {
+      if (window.supabaseClient) {
+        // Collect product IDs
+        const productIds = currentCart.map(item => item.productId).filter(Boolean);
+        const uniqueProductIds = [...new Set(productIds)];
+
+        if (uniqueProductIds.length > 0) {
+          const productTable = hasTestItems ? 'test_product' : 'product';
+
+          // Fetch products to get shipping column
+          const { data: products, error: productError } = await window.supabaseClient
+            .from(productTable)
+            .select('id, shipping')
+            .in('id', uniqueProductIds);
+
+          if (!productError && products && products.length > 0) {
+            const shippingIds = products.map(p => p.shipping).filter(Boolean);
+            const uniqueShippingIds = [...new Set(shippingIds)];
+
+            if (uniqueShippingIds.length > 0) {
+              // Fetch shipping rates from shipping_rates table
+              const { data: rates, error: rateError } = await window.supabaseClient
+                .from('shipping_rates')
+                .select('*')
+                .in('id', uniqueShippingIds);
+
+              if (!rateError && rates && rates.length > 0) {
+                // Find most expensive rate
+                for (const rate of rates) {
+                  // Ensure we handle numerical parsing just in case
+                  const price = parseFloat(rate.price);
+                  if (!isNaN(price) && price > maxShippingPrice) {
+                    maxShippingPrice = price;
+                    maxShippingId = rate.shipping_id;
+                  }
+                }
+              } else if (rateError) {
+                console.error("Error fetching shipping rates:", rateError);
+              }
+            }
+          } else if (productError) {
+            console.error("Error fetching products for shipping:", productError);
+          }
+        }
+      }
+
+      const requestBody = {
+        items: currentCart,
+        returnUrl: window.location.origin + '/store/success.html?session_id={CHECKOUT_SESSION_ID}'
+      };
+
+      if (maxShippingId) {
+        requestBody.shipping_rate_id = maxShippingId;
+      }
+
       const response = await fetch(checkoutUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          items: currentCart,
-          returnUrl: window.location.origin + '/store/success.html?session_id={CHECKOUT_SESSION_ID}'
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();

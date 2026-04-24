@@ -29,7 +29,7 @@ serve(async (req) => {
     }
 
     // Parse the request body
-    const { items, returnUrl } = await req.json()
+    const { items, returnUrl, shipping_rate_id } = await req.json()
 
     // Validate inputs
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -77,11 +77,7 @@ serve(async (req) => {
       shipping_address_collection: {
         allowed_countries: ['US'],
       },
-      shipping_options: [
-        {
-          shipping_rate: 'shr_1TFe8hBA6S4OMIQxytHowB6F',
-        },
-      ],
+      shipping_options: shipping_rate_id ? [{ shipping_rate: shipping_rate_id }] : [],
       // Metadata allows us to attach the selected colors/sizes to the order in Stripe
       payment_intent_data: {
         metadata: metadata,
