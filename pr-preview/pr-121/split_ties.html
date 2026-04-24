@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.setDRACOLoader(dracoLoader);
+
+    gltfLoader.load('/store/images/Train Case & Hub Animation.glb', (gltf) => {
+      let tiesMesh = gltf.scene.children[0];
+
+      function splitMesh(mesh) {
+        const geom = mesh.geometry;
+        const positions = geom.attributes.position.array;
+        const normals = geom.attributes.normal.array;
+        const indices = geom.index.array;
+        const numVerts = geom.attributes.position.count;
+
+        // adjacency list
+        const adj = new Array(numVerts).fill(null).map(() => []);
+        for(let i=0; i<indices.length; i+=3) {
+           const a = indices[i], b = indices[i+1], c = indices[i+2];
+           adj[a].push(b, c);
+           adj[b].push(a, c);
+           adj[c].push(a, b);
+        }
+
+        const visited = new Uint8Array(numVerts);
+        const meshes = [];
+        const mat = mesh.material;
+
+        for(let i=0; i<numVerts; i++) {
+           if(!visited[i]) {
+              const compVerts = [];
+              const compIndices = [];
+              const q = [i];
+              visited[i] = 1;
+              compVerts.push(i);
+
+              while(q.length > 0) {
+                 const curr = q.pop();
+                 const neighbors = adj[curr];
+                 for(let j=0; j<neighbors.length; j++) {
+                    const n = neighbors[j];
+                    if(!visited[n]) {
+                       visited[n] = 1;
+                       q.push(n);
+                       compVerts.push(n);
+                    }
+                 }
+              }
+
+              // Rebuild geometry for this component
+              // Map old vertex index to new vertex index
+              const vMap = new Map();
+              const newPos = [];
+              const newNorm = [];
+
+              compVerts.forEach((oldIdx, newIdx) => {
+                  vMap.set(oldIdx, newIdx);
+                  newPos.push(positions[oldIdx*3], positions[oldIdx*3+1], positions[oldIdx*3+2]);
+                  newNorm.push(normals[oldIdx*3], normals[oldIdx*3+1], normals[oldIdx*3+2]);
+              });
+
+              // We need to find all triangles (indices) that belong to this component
+              // Since it's a connected component, any triangle with a vertex in this component is fully in this component.
+              // To avoid re-iterating all indices, we can iterate all indices once before this loop and group them,
+              // but for 2000 indices it's fast enough to just do it, or build a map.
+           }
+        }
+      }
+
+      console.log('Test successful');
+    }, undefined, (err) => {
+      console.error(err);
+    });
+  </script>
+</body>
+</html>
