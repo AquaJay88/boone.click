@@ -84,7 +84,7 @@ serve(async (req) => {
       },
       metadata: metadata,
       // Redirect URLs back to your website
-      return_url: returnUrl || `https://boone.click/store/success.html?session_id={CHECKOUT_SESSION_ID}`,
+      return_url: returnUrl || `https://aquajay88.github.io/boone.click/store/success.html?session_id={CHECKOUT_SESSION_ID}`,
     })
 
     // Return the generated session client_secret
